@@ -1,0 +1,2 @@
+# syndRomics
+R syndRomics package
