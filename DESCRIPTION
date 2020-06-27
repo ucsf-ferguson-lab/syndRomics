@@ -1,0 +1,27 @@
+Package: syndRomics
+Type: Package
+Title: Component loading interpretation and visualization with syndromic plots
+Version: 0.0.1.9000
+Author: Abel Torres Espin, Austin Chou
+Maintainer: Abel Torres Espin <atpspin@gmail.com>
+Description: The syndRomics package offers functionalities that aid in the steps for syndromics analysis 
+  by means of principal component analysis (PCA). The key steps in the syndromic analysis by PCA workflow are: 
+  1) component selection, the selection of PCs or syndromic components to keep for subsequent analysis, 
+  2) component interpretation, the determination of the meaning of the extracted syndromic components, 
+  3) component stability, the study of the syndromic component robustness for better generalization, and 
+  4) component visualization.
+License: MIT
+Encoding: UTF-8
+LazyData: false
+Imports: 
+  ggrepel,
+  ggnewscale,
+  pracma,
+  png,
+  boot,
+  rlang,
+  grid
+RoxygenNote: 7.1.0
+Depends: R (>= 3.5.0), dplyr, ggplot2, stringr, tidyr
+Suggests: knitr, rmarkdown, Gifi
+VignetteBuilder: knitr
