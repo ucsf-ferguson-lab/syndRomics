@@ -67,7 +67,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arbitrary_var=N
 
     try(s_plot<-extract_syndromic_plot(load_df = load_df, pc=pc, cutoff=c, VAF=v, text_size=text_size,
                                        arrow_size_multi = arrow_size_multi, repel = repel,arbitrary_var=arbitrary_var,
-                                       var_order=var_order, plot_legend = plot_legend,...))
+                                       var_order=var_order, plot_legend = plot_legend))
 
     s_list[[pc]]<-s_plot
   }
@@ -302,6 +302,7 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
       ylab(NULL)+xlab(NULL)+
       theme_minimal()+
       coord_flip()+
+      # ylim(-1,-1)+
       facet_grid(~component)
 
     if (!is.null(arbitrary_var)){
@@ -401,6 +402,7 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
         geom_point(data=b_load2, aes(y=.data$value, x=.data$Variables),inherit.aes = F)
     }
   }
+  b_plot<-b_plot+ylim(-1.1,1.1)
   return(b_plot)
 }
 

@@ -58,7 +58,7 @@ stand_loadings<-function(pca,pca_data){
 #'@param arbitrary_var Character or character vector with the names of the variables where loadings should be plot as absolute values.
 #'This is the case for categorical variables in categorical PCA where variables do not have direction.
 #'@param arrow_size_multi Numeric. Controls the size of the arrows proportional to the loading. Default=10
-#'@param repel Boolean. Whether to repel the text for preventing text overlap. Default=TRUE
+#'@param repel Boolean. Whether to repel the text for preventing text overlap. Default=FALSE
 #'@param plot_legend Boolean. Whether to plot the legend or not. Default=TRUE
 #'@param text_size Numeric. Controls for the size of the text. Default=9
 #'@param var_order Character, character vector or numeric vector. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise.
@@ -71,19 +71,19 @@ stand_loadings<-function(pca,pca_data){
 #'@return A \emph{ggplot2} object of the syndromic plot.
 #'
 #'
-#'@import ggplot2 dplyr ggrepel png
-#'@importFrom grid rasterGrob
+#'@import ggplot2 dplyr ggrepel
 #'@importFrom rlang .data
 #'
 extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL,arrow_size_multi=10,
-                                 repel=T,plot_legend=T,text_size=9, var_order='abs decreasing'){
+                                 repel=F,plot_legend=T,text_size=6, var_order='abs decreasing'){
+
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
 
   options(scipen=999)
 
-  img<-png::readPNG(system.file("PCVenn.png", package = "syndRomics"))
-  g<-rasterGrob(img,interpolate=TRUE, just = 'center')
+  # img<-png::readPNG(system.file("PCVenn.png", package = "syndRomics"))
+  # g<-grid::rasterGrob(img,interpolate=TRUE, just = 'center')
 
   # var_order=ran2
   p<-load_df
@@ -118,16 +118,23 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
 
   p<-p%>%dplyr::filter(.data$component==pc, abs(.data$loading)>=cutoff)
 
+  if (dim(p)[1]<1){
+    stop(paste('There is no loading above cutoff for ',pc,sep = ''))
+  }
+
   p<-p%>%
     dplyr::mutate(
       div=0:(n()-1),angle=.data$div*2*pi/n()+pi/2,
+      angletext=div*2*pi/n()+pi/2-pi/22,
       xend=3.5*cos(.data$angle), yend=3.5*sin(.data$angle),
       x=7*cos(.data$angle), y=7*sin(.data$angle),
       xtext=9*cos(.data$angle), ytext=9*sin(.data$angle),
-      xload=6*cos(.data$angle-pi/25), yload=6*sin(.data$angle-pi/25),
-      angletext=(.data$angle*180/pi)+ifelse(.data$x<0, 180,0)-(5),#
+      xload=6*cos(.data$angletext), yload=6*sin(.data$angletext),
+      angletext=(.data$angle*180/pi)+ifelse(.data$x<0, 180,0),#
       loading_txt=as.character(round(.data$loading,3)),
-      arrow_weight=(round(.data$loading,3))
+      arrow_weight=(round(.data$loading,3)),
+      hadjust=ifelse(.data$x<0, 'right','left'),
+      hadjust=ifelse(.data$y<(-3) | .data$y>3, 'center',hadjust)
     )
 
     p[p$Variables%in%arbitrary_var,'loading_txt']<-
@@ -140,8 +147,16 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
     load_df<-p%>%
       mutate(loading=ifelse(.data$Variables%in%arbitrary_var,NA,.data$loading))
 
+    angle1<-seq(0,1.2,length.out = 50)
+    angle2<-seq(1.95,3.18,length.out = 50)
+    angle3<-seq(4.02,5.4,length.out = 50)
+
+    pol<-data.frame(x=c(2.8*cos(angle1)-1,2.8*cos(angle2)+1,2.8*cos(angle3)),
+                    y=c(2.8*sin(angle1)-1,2.8*sin(angle2)-1,2.8*sin(angle3)+1))
+
     s_plot<-ggplot2::ggplot(p,aes(color=.data$loading, label=.data$Variables, x=.data$x, y=.data$y, xend=.data$xend, yend=.data$yend))+
-      ggplot2::annotation_custom(g, xmin = -2, xmax = 2, ymin=-2, ymax=2.4)+
+      # ggplot2::annotation_custom(g, xmin = -2, xmax = 2, ymin=-2, ymax=2.4)+
+      geom_polygon(data=pol,aes(x,y),inherit.aes = F, fill='grey')+
       ggplot2::scale_color_gradient2(name = "Loading",
                                      high = "firebrick1", mid = "white", low = "steelblue1",
                                      midpoint=0,na.value = 'transparent') +
@@ -156,7 +171,8 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
                      legend.text = element_blank(),legend.direction = 'horizontal',
                      legend.position = 'bottom',text = element_text(size=text_size*2))+
       ggplot2::xlim(-12,12)+
-      ggplot2::ylim(-12,12)
+      ggplot2::ylim(-12,12)+
+      coord_equal()
 
 
   legend_res<-0.005
@@ -192,16 +208,17 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
   }
 
   s_plot<-s_plot+
-    ggplot2::annotate(geom='text',x=0.15, y=0.5, color='black', label=pc, size=text_size,)+
-    ggplot2::annotate(geom='text',x=0.15, y=-0.8, color='black', label=VAF,size=text_size)+
+    ggplot2::annotate(geom='text',x=0, y=0.25, vjust = 'center', hjust = 'center', color='black', label=pc, size=text_size,)+
+    ggplot2::annotate(geom='text',x=0, y=-0.75, vjust = 'center', hjust = 'center',color='black', label=VAF,size=text_size)+
     ggplot2::geom_text(aes(label=.data$loading_txt, x=.data$xload, y=.data$yload, angle=.data$angletext),
                        color='black',size=text_size*0.7)
 
   if (repel){
-    s_plot<-s_plot+ggrepel::geom_text_repel(aes(x=.data$xtext, y=.data$ytext,label=.data$Variables),color='black',
-                                   min.segment.length = 0.5,size=text_size)
+    s_plot<-s_plot+ggrepel::geom_text_repel(aes(x=.data$xtext, y=.data$ytext,label=.data$Variables, hjust=hadjust),
+                                            color='black',min.segment.length = 0.5,size=text_size)
   }else{
-    s_plot<-s_plot+ggplot2::geom_text(aes(x=.data$xtext, y=.data$ytext,label=.data$Variables),color='black',size=text_size)
+    s_plot<-s_plot+ggplot2::geom_text(aes(x=.data$xtext, y=.data$ytext,label=.data$Variables,hjust=hadjust),
+                                      color='black',size=text_size)
   }
   return(s_plot)
 }
