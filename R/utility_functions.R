@@ -67,6 +67,9 @@ stand_loadings<-function(pca,pca_data){
 #'to plot. If a numeric vector is provided, the variables will be ordered as specified by the numbers. If a character
 #'vector is provided, the variables will be ordered in the same order as the variable names provided. In case of vector, non-specified
 #'variables will be excluded from the plot.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
 #'
 #'@return A \emph{ggplot2} object of the syndromic plot.
 #'
@@ -75,7 +78,8 @@ stand_loadings<-function(pca,pca_data){
 #'@importFrom rlang .data
 #'
 extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL,arrow_size_multi=10,
-                                 repel=F,plot_legend=T,text_size=6, var_order='abs decreasing'){
+                                 repel=F,plot_legend=T,text_size=6,
+                                 var_order='abs decreasing', colors=c("steelblue1","firebrick1")){
 
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
@@ -137,62 +141,62 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
       hadjust=ifelse(.data$y<(-3) | .data$y>3, 'center',hadjust)
     )
 
-    p[p$Variables%in%arbitrary_var,'loading_txt']<-
-      paste("|",
-            abs(round(p[p$Variables%in%arbitrary_var,'loading'],3)),
-            "|",sep = "")
-    arbitrary_df<-p%>%
-      mutate(arrow_weight=ifelse(.data$Variables%in%arbitrary_var,abs(.data$loading),NA))
+  p[p$Variables%in%arbitrary_var,'loading_txt']<-
+    paste("|",
+          abs(round(p[p$Variables%in%arbitrary_var,'loading'],3)),
+          "|",sep = "")
+  arbitrary_df<-p%>%
+    mutate(arrow_weight=ifelse(.data$Variables%in%arbitrary_var,abs(.data$loading),NA))
 
-    load_df<-p%>%
-      mutate(loading=ifelse(.data$Variables%in%arbitrary_var,NA,.data$loading))
+  load_df<-p%>%
+    mutate(loading=ifelse(.data$Variables%in%arbitrary_var,NA,.data$loading))
 
-    angle1<-seq(0,1.2,length.out = 50)
-    angle2<-seq(1.95,3.18,length.out = 50)
-    angle3<-seq(4.02,5.4,length.out = 50)
+  angle1<-seq(0,1.2,length.out = 50)
+  angle2<-seq(1.95,3.18,length.out = 50)
+  angle3<-seq(4.02,5.4,length.out = 50)
 
-    pol<-data.frame(x=c(2.8*cos(angle1)-1,2.8*cos(angle2)+1,2.8*cos(angle3)),
-                    y=c(2.8*sin(angle1)-1,2.8*sin(angle2)-1,2.8*sin(angle3)+1))
+  pol<-data.frame(x=c(2.8*cos(angle1)-1,2.8*cos(angle2)+1,2.8*cos(angle3)),
+                  y=c(2.8*sin(angle1)-1,2.8*sin(angle2)-1,2.8*sin(angle3)+1))
 
-    s_plot<-ggplot2::ggplot(p,aes(color=.data$loading, label=.data$Variables, x=.data$x, y=.data$y, xend=.data$xend, yend=.data$yend))+
-      # ggplot2::annotation_custom(g, xmin = -2, xmax = 2, ymin=-2, ymax=2.4)+
-      geom_polygon(data=pol,aes(x,y),inherit.aes = F, fill='grey')+
-      ggplot2::scale_color_gradient2(name = "Loading",
-                                     high = "firebrick1", mid = "white", low = "steelblue1",
-                                     midpoint=0,na.value = 'transparent') +
-      ggplot2::geom_segment(
-        arrow = arrow(type='closed', length = unit(0.3, 'cm'), angle = 25),
-        size=abs(p$arrow_weight)*arrow_size_multi, show.legend = F,
-        linejoin = 'mitre')+
-      ggplot2::ylab(NULL)+
-      ggplot2::xlab(NULL)+
-      ggplot2::theme(axis.text = element_blank(),panel.background = element_blank(),
-                     axis.ticks= element_blank(),axis.line = element_blank(),
-                     legend.text = element_blank(),legend.direction = 'horizontal',
-                     legend.position = 'bottom',text = element_text(size=text_size*2))+
-      ggplot2::xlim(-12,12)+
-      ggplot2::ylim(-12,12)+
-      coord_equal()
+  s_plot<-ggplot2::ggplot(p,aes(color=.data$loading, label=.data$Variables, x=.data$x, y=.data$y, xend=.data$xend, yend=.data$yend))+
+    # ggplot2::annotation_custom(g, xmin = -2, xmax = 2, ymin=-2, ymax=2.4)+
+    geom_polygon(data=pol,aes(x,y),inherit.aes = F, fill='grey')+
+    ggplot2::scale_color_gradient2(name = "Loading",
+                                   high = colors[2], mid = "white", low = colors[1],
+                                   midpoint=0,na.value = 'transparent') +
+    ggplot2::geom_segment(
+      arrow = arrow(type='closed', length = unit(0.3, 'cm'), angle = 25),
+      size=abs(p$arrow_weight)*arrow_size_multi, show.legend = F,
+      linejoin = 'mitre')+
+    ggplot2::ylab(NULL)+
+    ggplot2::xlab(NULL)+
+    ggplot2::theme(axis.text = element_blank(),panel.background = element_blank(),
+                   axis.ticks= element_blank(),axis.line = element_blank(),
+                   legend.text = element_blank(),legend.direction = 'horizontal',
+                   legend.position = 'bottom',text = element_text(size=text_size*2))+
+    ggplot2::xlim(-12,12)+
+    ggplot2::ylim(-12,12)+
+    coord_equal()
 
 
   legend_res<-0.005
   legend_df<-data.frame(x=seq(-3,3,legend_res),
                         z=seq(-1,1,legend_res/3))%>%
     dplyr::mutate(xend=ifelse(.data$x<=0, .data$x-legend_res, .data$x+legend_res), y=rep(-11, length(.data$x)),
-           yend=rep(-11, length(.data$x)))
+                  yend=rep(-11, length(.data$x)))
 
   if (plot_legend){
     s_plot<-s_plot+ggplot2::geom_segment(data=legend_df, aes(x=.data$x, y=.data$y, xend=.data$xend,
-                                                    yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
-                                inherit.aes = F, show.legend = F)+
+                                                             yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
+                                         inherit.aes = F, show.legend = F)+
       ggplot2::geom_segment(aes(x=max(legend_df$x), y=-11, xend=max(legend_df$x)+0.1,
-                       yend=-11),color='firebrick1',arrow = arrow(type='closed',
-                                                                  length = unit(0.1, 'cm'), angle = 25),
-                   size=6, show.legend = F,linejoin = 'mitre')+
+                                yend=-11),color=colors[2],arrow = arrow(type='closed',
+                                                                        length = unit(0.1, 'cm'), angle = 25),
+                            size=6, show.legend = F,linejoin = 'mitre')+
       ggplot2::geom_segment(aes(x=min(legend_df$x), y=-11, xend=min(legend_df$x)-0.1,
-                       yend=-11),color='steelblue1',arrow = arrow(type='closed',
-                                                                  length = unit(0.1, 'cm'), angle = 25),
-                   size=6, show.legend = F,linejoin = 'mitre')+
+                                yend=-11),color=colors[1],arrow = arrow(type='closed',
+                                                                        length = unit(0.1, 'cm'), angle = 25),
+                            size=6, show.legend = F,linejoin = 'mitre')+
       ggplot2::annotate(geom='text', x=-4.1, y=-11, label="-1", size=text_size)+
       ggplot2::annotate(geom='text', x=4.1, y=-11, label="1", size=text_size)
   }
@@ -222,6 +226,7 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF, arbitrary_var=NULL
   }
   return(s_plot)
 }
+
 
 #'@title Extracts different component/factor similarity (matching) indices
 #'
@@ -487,7 +492,7 @@ extract_rmse<-function(vector1, vector2){
 #' One row per variable. The values are the loadings.
 #'@param original_loadings The data.frame containing the standardized loadings of the original sample.
 #'@param ndim Numeric. Number of PCs to save (1 to ndim).
-#'@param pb Object of class "Progress" "R6" generated by \emph{dplyr::progress_estimated()}. Not required.
+#'@param pb Object of class "Progress_bar" "R6" generated by \emph{progess::progress_bar$new()}. Not required.
 #'
 #'@details A major problem of performing bootstrapping procedures in PCA is what is known as sign reflection:
 #' the change of the sign (positive/negative) on the component loadings in a PC given slight variations in the data. In addition,
@@ -515,10 +520,9 @@ extract_rmse<-function(vector1, vector2){
 #'
 boot_pca_sample<-function(data, indices, pca, original_loadings, ndim,pb=NULL){
   d<-data[indices,]
+
   if(!is.null(pb)){
-    pb$tick()$print()
-    # pb_count<<-pb_count+1
-    # setpb(pb,pb_count)
+    pb$tick()
   }
 
   if(class(pca)[1]=='prcomp'){
@@ -569,7 +573,7 @@ boot_pca_sample<-function(data, indices, pca, original_loadings, ndim,pb=NULL){
 #'@param ndim Numeric. Number of PCs to save (1 to ndim).
 #'@param output Character. Determines the output to compute. Possible values are
 #'Variance accounted for ("VAF") or the standardized loadings ("s.loadings"). Default="VAF"
-#'@param pb Object of class "Progress" "R6" generated by \emph{dplyr::progress_estimated()}. Not required.
+#'@param pb Object of class "Progress_bar" "R6" generated by \emph{progress::progress_bar$new()}. Not required.
 #'@param perm.method Character determining the permutation method to use as in Linting et al., 2011.
 #'"permD" (Buja & Eyuboglu, 1992; Linting et al., 2011) where variables as permuted independently and
 #'concomitantly as opposite of the "permV" permutation strategy (Linting et al., 2011) where
@@ -596,7 +600,7 @@ permut_pca<-function(pca,pca_data, P=1000,ndim, output='VAF', pb=NULL, perm.meth
   permut_pca_D<-function(x, pb=NULL){
 
     if(!is.null(pb)){
-      pb$tick()$print()
+      pb$tick()
     }
     x<-apply(x, 2,function(x){base::sample(x, length(x))})
 
@@ -618,7 +622,7 @@ permut_pca<-function(pca,pca_data, P=1000,ndim, output='VAF', pb=NULL, perm.meth
       pca_per<-eval(pca$call)
     }
 
-    if (output=='s.loadings'| output=='commun'){
+    if (output=='s.loadings'|| output=='commun'){
       return(stand_loadings(pca_per, x))
     }else if (output=='VAF'){
       if (class(pca)[1]=='prcomp'){
@@ -635,8 +639,8 @@ permut_pca<-function(pca,pca_data, P=1000,ndim, output='VAF', pb=NULL, perm.meth
     list_perm_loadings<-list()
     for (i in 1:dim(x)[2]){
 
-      if(!is.null(pb) & pb$i!=pb$n){
-        pb$tick()$print()
+      if(!is.null(pb)){
+        pb$tick()
       }
 
       perm_x<-x
@@ -673,9 +677,9 @@ permut_pca<-function(pca,pca_data, P=1000,ndim, output='VAF', pb=NULL, perm.meth
     return(list_perm_loadings)
   }
 
-  if (output=='VAF' | perm.method=='permD'){
+  if (output=='VAF' || perm.method=='permD'){
     per_samples<-replicate(P, permut_pca_D(pca_data, pb=pb), simplify = F)
-  }else if ((output=='s.loadings'|output=='commun') & perm.method=='permV'){
+  }else if ((output=='s.loadings'||output=='commun') && perm.method=='permV'){
     original_loadings<-extract_loadings(pca,pca_data)
     original_loadings$Variables<-NULL
 

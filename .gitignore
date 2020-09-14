@@ -2,7 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-SyndRomics.Rproj
-doc
-Meta
-prototypes.R
+prototype.R
