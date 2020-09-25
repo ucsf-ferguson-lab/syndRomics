@@ -16,6 +16,7 @@ syndromic_plot(
   plot_legend = T,
   text_size = 9,
   var_order = "abs decreasing",
+  colors = c("steelblue1", "firebrick1"),
   ...
 )
 }
@@ -46,6 +47,10 @@ This is the case for categorical variables in categorical PCA where variables do
 
 \item{var_order}{Character. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 'abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.}
+
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 
 \item{...}{Other arguments passed to \emph{extract_syndromic_plot()}}
 }

@@ -18,8 +18,9 @@ Imports:
   ggnewscale,
   pracma,
   boot,
-  rlang
-RoxygenNote: 7.1.0
-Depends: R (>= 3.5.0), dplyr, ggplot2, stringr, tidyr
+  rlang,
+  progress
+RoxygenNote: 7.1.1
+Depends: R (>= 3.0.0), dplyr, ggplot2, stringr, tidyr,progress
 Suggests: knitr, rmarkdown, Gifi
 VignetteBuilder: knitr

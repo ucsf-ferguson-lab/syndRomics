@@ -11,10 +11,11 @@ extract_syndromic_plot(
   VAF,
   arbitrary_var = NULL,
   arrow_size_multi = 10,
-  repel = T,
+  repel = F,
   plot_legend = T,
-  text_size = 9,
-  var_order = "abs decreasing"
+  text_size = 6,
+  var_order = "abs decreasing",
+  colors = c("steelblue1", "firebrick1")
 )
 }
 \arguments{
@@ -33,7 +34,7 @@ This is the case for categorical variables in categorical PCA where variables do
 
 \item{arrow_size_multi}{Numeric. Controls the size of the arrows proportional to the loading. Default=10}
 
-\item{repel}{Boolean. Whether to repel the text for preventing text overlap. Default=TRUE}
+\item{repel}{Boolean. Whether to repel the text for preventing text overlap. Default=FALSE}
 
 \item{plot_legend}{Boolean. Whether to plot the legend or not. Default=TRUE}
 
@@ -45,6 +46,10 @@ Possible values: 'abs decreasing': plot by decreasing absolute value;
 to plot. If a numeric vector is provided, the variables will be ordered as specified by the numbers. If a character
 vector is provided, the variables will be ordered in the same order as the variable names provided. In case of vector, non-specified
 variables will be excluded from the plot.}
+
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 }
 \value{
 A \emph{ggplot2} object of the syndromic plot.

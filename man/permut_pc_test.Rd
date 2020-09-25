@@ -14,6 +14,7 @@ permut_pc_test(
   adj.method = "BH",
   perm.method = "permV",
   plot = T,
+  colors = c("steelblue", "orange"),
   ...
 )
 }
@@ -42,7 +43,12 @@ concomitantly (Fig. 2A) as opposite of the "permV" permutation strategy (Linting
 variables are permuted one at the time. If statistic is set to "VAF", \emph{perm.method} "permD" will be
 used. Default="permV".}
 
-\item{plot}{Boolean. Whether to retrun a ggplot2 object containing a plot of "VAF", "loadings" or "communalities" as specified in \emph{statistic}.}
+\item{plot}{Boolean. Whether to rerun a ggplot2 object containing a plot of "VAF", "loadings" or "communalities" as specified in \emph{statistic}.}
+
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the first color is used for the original VAF, the second color
+is used for the permuted VAF and error bars for the gradient used in the plot.
+Hexadecimal number can be obtained using \emph{rgb} for example.}
 
 \item{...}{Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE}
 }

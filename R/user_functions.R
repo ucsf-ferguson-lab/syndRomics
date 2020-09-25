@@ -24,6 +24,10 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'@param text_size Numeric. Controls for the size of the text. Default=9
 #'@param var_order Character. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 #''abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
+#'
 #'@param ... Other arguments passed to \emph{extract_syndromic_plot()}
 #'
 #'@return Returns a list of \emph{ggplot2} objects with one element for each PC plot. It also renders and saves the plots as *.pdf
@@ -41,7 +45,8 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'
 syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arbitrary_var=NULL,arrow_size_multi=10,
                          repel=T, plot_legend=T, text_size=9,
-                         var_order='abs decreasing',...){
+                         var_order='abs decreasing',colors=c("steelblue1","firebrick1"),
+                         ...){
 
   load_df<-extract_loadings(pca, pca_data)
 
@@ -67,7 +72,8 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arbitrary_var=N
 
     try(s_plot<-extract_syndromic_plot(load_df = load_df, pc=pc, cutoff=c, VAF=v, text_size=text_size,
                                        arrow_size_multi = arrow_size_multi, repel = repel,arbitrary_var=arbitrary_var,
-                                       var_order=var_order, plot_legend = plot_legend))
+                                       var_order=var_order, plot_legend = plot_legend,
+                                       colors=colors))
 
     s_list[[pc]]<-s_plot
   }
@@ -98,6 +104,9 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arbitrary_var=N
 #'@param text_size Numeric. Size of the text_values.
 #'@param vars Character vector. Variables will be ordered as the provided variable names. Non-specified
 #'variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
 #'
 #'@return Returns a \emph{ggplot2} object.
 #'
@@ -109,7 +118,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arbitrary_var=N
 #'
 heatmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,plot_title='Standardized loadings',
                           legend_title='s. loading', text_values=T, star_values=F,
-                          text_size=2, vars=NULL){
+                          text_size=2, vars=NULL, colors=c("steelblue1","firebrick1")){
 
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
@@ -157,7 +166,7 @@ heatmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
   h_plot<-load_df%>%filter(.data$component%in%paste('PC',1:ndim, sep = ''))%>%
     ggplot(aes(.data$component, .data$Variables, fill=.data$loading))+
     geom_raster()+
-    scale_fill_gradient2(low='blue3', high='red3',limits=c(-1,1), na.value =  "transparent")+
+    scale_fill_gradient2(low=colors[1], high=colors[2],limits=c(-1,1), na.value =  "transparent")+
     labs(title=plot_title,fill=legend_title)+
     ylab(NULL)+xlab(NULL)+
     theme_minimal()
@@ -209,6 +218,9 @@ heatmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
 #'@param plot_cutoff Boolean. Whether to plot the cutoff lines or not.
 #'@param vars Character vector. Variables will be ordered as the provided variable names. Non-specified
 #'variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
 #'
 #'@return Returns a \emph{ggplot2} object.
 #'
@@ -220,7 +232,8 @@ heatmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
 barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
                          load_list=NULL,conf=0.95, plot_list_original=F,plot_list_center=F,
                          plot_title='Standardized loadings', legend_title='s. loading',text_values=F, star_values=T,
-                         text_size=2, plot_cutoff=T, vars=NULL){
+                         text_size=2, plot_cutoff=T, vars=NULL,
+                         colors=c("steelblue1","firebrick1")){
 
   # load_list<-b$boot_samples
   # pca_data<-mtcars
@@ -297,7 +310,7 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
     b_plot<-load_df%>%
       ggplot(aes(.data$Variables, .data$loading, fill=.data$loading))+
       geom_col()+
-      scale_fill_gradient2(low='blue3', high='red3',limits=c(-1,1), na.value =  "transparent")+
+      scale_fill_gradient2(low=colors[1], high=colors[2],limits=c(-1,1), na.value =  "transparent")+
       labs(title=plot_title,fill=legend_title)+
       ylab(NULL)+xlab(NULL)+
       theme_minimal()+
@@ -319,8 +332,8 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
 
     if(plot_cutoff){
       b_plot<-b_plot+
-        geom_hline(data=cutoff_df,aes(yintercept = cutoff), color='red3', alpha=0.6)+
-        geom_hline(data=cutoff_df,aes(yintercept = -cutoff), color='blue3', alpha=0.6)
+        geom_hline(data=cutoff_df,aes(yintercept = cutoff), color=colors[2], alpha=0.6)+
+        geom_hline(data=cutoff_df,aes(yintercept = -cutoff), color=colors[1], alpha=0.6)
     }
 
     if (text_values){
@@ -382,7 +395,7 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
     b_plot<-b_load2%>%
       ggplot(aes(.data$Variables, .data$value, fill=.data$value))+
       geom_col()+
-      scale_fill_gradient2(low='blue3', high='red3',limits=c(-1,1), na.value =  "transparent")+
+      scale_fill_gradient2(low=colors[1], high=colors[2],limits=c(-1,1), na.value =  "transparent")+
       labs(title=plot_title,fill=legend_title)+
       ylab(NULL)+xlab(NULL)+
       theme_minimal()+
@@ -430,6 +443,9 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
 #'variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.
 #'@param var_order Character. Specify the order of the variables in the plot by the communalitys values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 #''abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
 #'
 #'@return Returns a \emph{ggplot2} object.
 #'
@@ -440,7 +456,8 @@ barmap_loading<-function(pca, pca_data, ndim=10, cutoff=0.5,arbitrary_var=NULL,
 #'
 barmap_commun<-function(pca, pca_data, ndim=10,load_list=NULL,conf=0.95, plot_original=T,plot_list_center=F,
                         plot_title='Communalities', legend_title='communa.',text_values=F,
-                        text_size=2, var_order='increasing',vars=NULL){
+                        text_size=2, var_order='increasing',vars=NULL,
+                        colors=c("white","firebrick1")){
 
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
@@ -485,7 +502,7 @@ barmap_commun<-function(pca, pca_data, ndim=10,load_list=NULL,conf=0.95, plot_or
 
   c_plot<-commun_df%>%
     ggplot(aes(.data$Variables, .data$commun, fill=.data$commun))+
-    scale_fill_gradient2(low='white', high='red3',limits=c(0,1), na.value =  "transparent")+
+    scale_fill_gradient2(low=colors[1], high=colors[2],limits=c(0,1), na.value =  "transparent")+
     labs(title=paste(plot_title, ' for total of ', ndim, ' PCs', sep = ''),
          fill=legend_title)+
     ylab(NULL)+xlab(NULL)+
@@ -571,7 +588,11 @@ barmap_commun<-function(pca, pca_data, ndim=10,load_list=NULL,conf=0.95, plot_or
 #'@param conf Numeric. Level of confidence region for the confidence interval. E.g. 0.95 generates 95CI. Default=0.95
 #'@param barmap_plot Boolean. Whether to generate a barmap plot of the bootstrapped loadings or not.
 #'See \emph{?barmap_loadings} for details. Default=TRUE
-#'@param ... Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+#'for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.
+#'@param ... Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE.
+#'For example, the colors for the bars.
 #'
 #'@return Returns a list object.
 #'\describe{
@@ -604,7 +625,8 @@ barmap_commun<-function(pca, pca_data, ndim=10,load_list=NULL,conf=0.95, plot_or
 #'
 pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communalities=T,
                        test_similarity=T, similarity_metric='all', s_cut_off=0.1,
-                       ci_type='bca', conf=0.95,barmap_plot=T,...){
+                       ci_type='bca', conf=0.95,barmap_plot=T,
+                       colors=c("steelblue1","firebrick1"),...){
 
   # pca<-prcomp(mtcars[1:10,], center = T, scale. = T)
   # pca_data<-mtcars[1:10,]
@@ -622,27 +644,25 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   original_loadings<-stand_loadings(pca, pca_data)
   ndim<-min(dim(original_loadings)[2], ndim)
 
-  cat(paste("Bootstrapping ", B, " times...", sep=''), '\n')
+  message("Bootstrapping ", B, " times")
+  pb <- progress_bar$new(
+    format = "[:bar] :percent ~remaining :eta",
+    total = B+1, clear = FALSE, width= 80)
 
-  pb <- dplyr::progress_estimated(B+1)
-  # pb <- startpb(0, B)
-  # pb_count<<-0
   b_pca<-boot::boot(data = pca_data, pca=pca, statistic = boot_pca_sample, R=B,
               ndim=ndim,original_loadings=original_loadings,
               sim = sim, pb=pb, ...)
   b_pca$t<-na.omit(b_pca$t)
   b_pca$R<-dim(b_pca$t)[1]
 
-  pb$i<-pb$n
-  pb$print()
-
-  cat('\n',"Calculating confident intervals...",'\n')
-
-  pb <- dplyr::progress_estimated(dim(b_pca$t)[2])
+  message("Calculating confident intervals")
+  pb <- progress_bar$new(
+    format = "[:bar] :percent ~remaining :eta",
+    total = dim(b_pca$t)[2], clear = FALSE, width= 80)
   ci_results<-list()
 
   try_ci<-try(for(i in 1:dim(b_pca$t)[2]){
-    pb$tick()$print()
+    pb$tick()
     ci<-boot::boot.ci(b_pca, index = i, type = ci_type,conf = conf,...)
     ci_results[[i]]<-ci[[names(ci)[str_detect(names(ci),ci_type)]]][,4:5]
   })
@@ -651,9 +671,6 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     stop('Computation of confident intervals has failed, probably because B
          is too small. Please increase B and try again.')
   }
-
-  pb$i<-pb$n
-  pb$print()
 
   ci_results<-do.call(rbind,ci_results)
 
@@ -684,11 +701,13 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   results_list[['boot_samples']]<-b_list
 
   if (test_similarity){
-    cat('\n',"Calculating PC similarities...",'\n')
-    pb <- dplyr::progress_estimated(length(b_list))
+    message("Calculating PC similarities")
+    pb <- progress_bar$new(
+      format = "[:bar] :percent ~remaining :eta",
+      total = length(b_list), clear = FALSE, width= 80)
     similarity_res<-list()
     for(i in 1:length(b_list)){
-      pb$tick()$print()
+      pb$tick()
       load.list<-list(original_loadings[,1:ndim],b_list[[i]][,1:ndim])
       similarity_res[[i]]<-component_similarity(load.list, ndim=ndim, s_cut_off = s_cut_off,
                                                 similarity_metric = similarity_metric)$index_mean
@@ -706,8 +725,6 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     results_list[['PC_similarity']]<-list('similarity_mean'=sim_mean,
                                      'similarity_ci_low'=ci_sim_low,
                                      'similarity_ci_high'=ci_sim_high)
-    pb$i<-pb$n
-    pb$print()
   }
 
   if (communalities){
@@ -743,14 +760,16 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
       barmap_loading(pca, pca_data, load_list =  b_list,
                      star_values = F,
                      text_values = F,ndim = ndim, plot_cutoff = F,
-                     plot_title = paste('Bootstrap s. loadings ','(',b_pca$R,' samples)',sep = ''),...)
+                     plot_title = paste('Bootstrap s. loadings ','(',b_pca$R,' samples)',sep = ''),
+                     colors=colors, ...)
 
     if (communalities){
       com_df<-as.data.frame(results_c)
       com_df$Variables<-row.names(results_c)
 
       com_plot<-barmap_commun(pca, pca_data, ndim=ndim,
-                              plot_title = paste('Bootstrap communalities ','(',b_pca$R,' samples, ', ndim, ' PCs)',sep = ''),...)+
+                              plot_title = paste('Bootstrap communalities ','(',b_pca$R,' samples, ', ndim, ' PCs)',sep = ''),
+                              colors=colors, ...)+
         geom_point(data=com_df, aes(y=.data$Mean_B, x=.data$Variables), inherit.aes = F)+
         geom_errorbar(data=com_df, aes(ymin=.data$CI_low_B, ymax=.data$CI_high_B,
                                        x=.data$Variables), inherit.aes = F, width=0.5)
@@ -758,11 +777,11 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
       results_list[['boot_barmap_communalities']]<-com_plot
     }
   }
-  cat('\n','=== DONE ===', '\n')
-  cat('Final B iterations:', dim(b_pca$t)[1],'\n')
+  message("\n",'=== DONE ===','\nFinal B iterations: ', dim(b_pca$t)[1])
+
   if(B-dim(b_pca$t)[1]!=0){
-    cat('=============================================','\n')
-    cat(B-dim(b_pca$t)[1],'iterations could not be computed. Low number of rows might cause some bootstrap samples not suitable for PCA','\n')
+    message(paste0(rep("=",60),collapse = ""))
+    message(B-dim(b_pca$t)[1],' iterations could not be computed. Low number of rows might cause some bootstrap samples not suitable for PCA')
   }
   return(results_list)
 }
@@ -792,9 +811,13 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'concomitantly (Fig. 2A) as opposite of the "permV" permutation strategy (Linting et al., 2011) where
 #'variables are permuted one at the time. If statistic is set to "VAF", \emph{perm.method} "permD" will be
 #'used. Default="permV".
-#'@param plot Boolean. Whether to retrun a ggplot2 object containing a plot of "VAF", "loadings" or "communalities" as specified in \emph{statistic}.
+#'@param plot Boolean. Whether to rerun a ggplot2 object containing a plot of "VAF", "loadings" or "communalities" as specified in \emph{statistic}.
+#'@param colors Character vector of length 2. Vector with the character name or
+#'hexadecimal number (e.g. "#FF0000") of two colors, the first color is used for the original VAF, the second color
+#'is used for the permuted VAF and error bars for the gradient used in the plot.
+#'Hexadecimal number can be obtained using \emph{rgb} for example.
 #'@param ... Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE
-
+#'
 #'@details Nonparametric permutation for hypothesis testing of the VAF of component, the loadings or communalities
 #'have been studied (see refs). The hypothesis test is defined as:
 #'H(null): PC metric (either VAF or loading) is indistinguishable from a random generation
@@ -840,7 +863,8 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'
 
 permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.95,
-                         adj.method='BH', perm.method='permV', plot=T,...){
+                         adj.method='BH', perm.method='permV', plot=T,
+                         colors=c('steelblue','orange'),...){
 
   # P=100
   # ndim=5
@@ -852,19 +876,23 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
   results_list<-list()
 
   if (statistic=='VAF' | perm.method=='permD'){
-    pb <- dplyr::progress_estimated(P+1)
-    cat(paste("Permuting ", P, " times... for ", statistic, " using permD method", sep=''), '\n')
+    message("Permuting ", P, " times for ", statistic,
+                  " using permD method")
+    pb <- progress_bar$new(
+      format = "[:bar] :percent ~remaining :eta",
+      total = P+1, clear = FALSE, width= 80)
     results_list[['perm.method']]<-'permD'
   }else if ((statistic=='s.loadings'| statistic=='commun') & perm.method=='permV'){
-    pb <- dplyr::progress_estimated((P+1)*dim(pca_data)[2])
-    cat(paste("Permuting ", P, " times... for ", statistic, " using permV method", sep=''), '\n')
+    message("Permuting ", P," x ",dim(pca_data)[2], " times for ", statistic,
+            " using permV method")
+    pb <- progress_bar$new(
+      format = "[:bar] :percent ~remaining :eta",
+      total = (P+1)*dim(pca_data)[2], clear = FALSE, width= 80)
     results_list[['perm.method']]<-'permV'
   }
 
   per_list<-permut_pca(pca,pca_data, P,ndim = ndim, output = statistic, pb = pb, perm.method = perm.method)
 
-  pb$i<-pb$n
-  print(pb)
 
   results_list[['per_list']]<-per_list
   results_list[['statistic']]<-statistic
@@ -872,8 +900,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
 
   if (statistic=='VAF'){
-    cat('\n','Calculating VAF...','\n')
-
+    message("\nCalculating VAF...")
     df_per<-do.call(rbind, per_list)
 
     if (class(pca)[1]=='prcomp'){
@@ -919,9 +946,9 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
         geom_point()+
         geom_line()+
         geom_errorbar(data=per_CI, aes(x=.data$pc, ymin=.data$ymin*100, ymax=.data$ymax*100), inherit.aes = F,
-                      position = position_dodge(), color='orange', width=0.4)+
+                      position = position_dodge(), color=colors[2], width=0.4)+
         theme_minimal()+
-        scale_color_manual(values=c('steelblue','orange'),
+        scale_color_manual(values=colors,
                            name = "VAF", labels = c("Original", "Permuted"))+
         xlab(NULL)+ylab('Variance acounted for (VAF %)')+
         ggtitle(paste('VAF permutation test ','(',P,' samples)',sep = ''))+
@@ -933,7 +960,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
   }
 
   if (statistic=='s.loadings'){
-    cat('\n','Calculating loadings...','\n')
+    message('\nCalculating loadings...')
 
     original_loadings<-stand_loadings(pca, pca_data)
     nvars<-dim(pca_data)[2]
@@ -981,7 +1008,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
     }
 
     if (statistic=='commun'){
-      cat('\n','Calculating communalities...','\n')
+      message('\nCalculating communalities...')
 
       original_loadings<-stand_loadings(pca, pca_data)[,1:ndim]
       original_communalities<-rowSums(original_loadings^2)
@@ -1036,7 +1063,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
   results_list[['results']]<-results
 
-  cat('\n','DONE', '\n')
+  message('\n','DONE')
   return(results_list)
 }
 

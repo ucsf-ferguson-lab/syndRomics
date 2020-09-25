@@ -17,6 +17,7 @@ pc_stability(
   ci_type = "bca",
   conf = 0.95,
   barmap_plot = T,
+  colors = c("steelblue1", "firebrick1"),
   ...
 )
 }
@@ -61,7 +62,12 @@ we have set 'bca' as the default. See ref for more details.}
 \item{barmap_plot}{Boolean. Whether to generate a barmap plot of the bootstrapped loadings or not.
 See \emph{?barmap_loadings} for details. Default=TRUE}
 
-\item{...}{Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE}
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
+
+\item{...}{Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE.
+For example, the colors for the bars.}
 }
 \value{
 Returns a list object.
