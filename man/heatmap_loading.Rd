@@ -15,7 +15,8 @@ heatmap_loading(
   text_values = T,
   star_values = F,
   text_size = 2,
-  vars = NULL
+  vars = NULL,
+  colors = c("steelblue1", "firebrick1")
 )
 }
 \arguments{
@@ -46,6 +47,10 @@ This is the case for categorical variables in categorical PCA where variables do
 
 \item{vars}{Character vector. Variables will be ordered as the provided variable names. Non-specified
 variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.}
+
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 }
 \value{
 Returns a \emph{ggplot2} object.

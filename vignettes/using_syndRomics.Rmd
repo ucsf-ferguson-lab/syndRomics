@@ -46,6 +46,7 @@ library(syndRomics)
 library(ggplot2)
 library(dplyr)
 library(stringr)
+library(progress)
 ```
 
 Loading the data and extracting the variables at 6 weeks after injury. To simplify

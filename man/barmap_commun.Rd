@@ -17,7 +17,8 @@ barmap_commun(
   text_values = F,
   text_size = 2,
   var_order = "increasing",
-  vars = NULL
+  vars = NULL,
+  colors = c("white", "firebrick1")
 )
 }
 \arguments{
@@ -50,6 +51,10 @@ One row per variable. The values are the loadings.}
 
 \item{vars}{Character vector. Variables will be ordered as the provided variable names. Non-specified
 variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.}
+
+\item{colors}{Character vector of length 2. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 }
 \value{
 Returns a \emph{ggplot2} object.
