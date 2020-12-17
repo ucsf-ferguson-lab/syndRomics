@@ -7,21 +7,19 @@
 barmap_loading(
   pca,
   pca_data,
-  ndim = 10,
-  cutoff = 0.5,
-  arbitrary_var = NULL,
-  load_list = NULL,
+  ndim = 1:5,
+  cutoff = 0,
+  resample_ci = NULL,
   conf = 0.95,
-  plot_list_original = F,
   plot_list_center = F,
-  plot_title = "Standardized loadings",
-  legend_title = "s. loading",
+  plot_legend = T,
   text_values = F,
-  star_values = T,
+  star_values = F,
   text_size = 2,
   plot_cutoff = T,
   vars = NULL,
-  colors = c("steelblue1", "firebrick1")
+  colors = c("steelblue1", "white", "firebrick1"),
+  gradient_color = T
 )
 }
 \arguments{
@@ -36,42 +34,42 @@ One row per variable. The values are the loadings.}
 \item{cutoff}{Numeric or numeric vector of length \emph{ndim}.
 Value of the loadings threshold (i.e. |loadings| >= cutoff) to plot with stars. Default = 0.5}
 
-\item{arbitrary_var}{Character or character vector with the names of the variables where the loadings should be plot as absolute values.
-This is the case for categorical variables in categorical PCA where variables do not have direction.}
-
-\item{load_list}{List. List of loading matrices used to plot percentile confidence intervals around the average. If NULL, no error bars are ploted. Default=NULL}
+\item{resample_ci}{dataframe. Dataframe containing the columns "Variables", "component","original", "mean","ci_low" and "ci_high" containing the center, the lower bound and the upper bound of the confident intervals to plot.
+These can be obtained by the pc_stability or permut_pc_test "results" element or computed independently.}
 
 \item{conf}{Numeric. Confidence level used when \emph{load_list} is provided.}
 
-\item{plot_list_original}{Boolean. Whether to plot the loadings obtained from the values passed to \emph{pca} and \emph{pca_data} when \emph{load_list} is not NULL.}
+\item{plot_list_center}{Logical. Whether to plot the average loadings obtained from \emph{load_list}.}
 
-\item{plot_list_center}{Boolean. Whether to plot the average loadings obtained from \emph{load_list}.}
+\item{plot_legend}{Logical. Whether legend should be plotted.}
 
-\item{plot_title}{String. Title of the plot. 'Standardized loadings' by default.}
+\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default=TRUE}
 
-\item{legend_title}{String. Title of the legend. 's. loading' by default.}
-
-\item{text_values}{Boolean. Whether to plot the values of the loadings or not. Default=TRUE}
-
-\item{star_values}{Boolean. Whether to plot a star in |loadings|>=cutoff. Only relevant if
+\item{star_values}{Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 \emph{text_values}=FALSE. Default=FALSE}
 
 \item{text_size}{Numeric. Size of the text_values.}
 
-\item{plot_cutoff}{Boolean. Whether to plot the cutoff lines or not.}
+\item{plot_cutoff}{Logical. Whether to plot the cutoff lines or not.}
 
 \item{vars}{Character vector. Variables will be ordered as the provided variable names. Non-specified
 variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.}
 
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+\item{colors}{Character vector of length 3. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of three colors, the lower color, the middle color and the higher color
 for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
+
+\item{gradient_color}{Logical. Whether colors should be plotted as a gradient proportional to the loadings.}
 }
 \value{
 Returns a \emph{ggplot2} object.
 }
 \description{
 Plot a Barmap of the standardized loadings from a PCA solution.
+}
+\examples{
+pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
 }
 \author{
 Abel Torres Espin

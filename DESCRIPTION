@@ -10,7 +10,7 @@ Description: The syndRomics package offers functionalities that aid in the steps
   2) component interpretation, the determination of the meaning of the extracted syndromic components, 
   3) component stability, the study of the syndromic component robustness for better generalization, and 
   4) component visualization.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
 Imports: 
@@ -18,8 +18,7 @@ Imports:
   ggnewscale,
   pracma,
   boot,
-  rlang,
-  progress
+  rlang
 RoxygenNote: 7.1.1
 Depends: R (>= 3.0.0), dplyr, ggplot2, stringr, tidyr,progress
 Suggests: knitr, rmarkdown, Gifi

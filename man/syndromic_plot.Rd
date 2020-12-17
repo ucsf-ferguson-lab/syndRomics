@@ -10,13 +10,12 @@ syndromic_plot(
   ndim = 3,
   cutoff,
   VAF,
-  arbitrary_var = NULL,
   arrow_size_multi = 10,
   repel = T,
   plot_legend = T,
   text_size = 9,
   var_order = "abs decreasing",
-  colors = c("steelblue1", "firebrick1"),
+  colors = c("steelblue1", "white", "firebrick1"),
   ...
 )
 }
@@ -30,33 +29,29 @@ One row per variable. The values are the loadings.}
 \item{ndim}{Numeric. Number of PCs to plot.}
 
 \item{cutoff}{Numeric or numeric vector of length \emph{ndim}. Value of the loadings threshold to plot. If only one value is passed,
-the same cutoff will be used for all the PCs. If a vector passed, each value will be used for the corresponding PC.}
+the same cutoff will be used for all the PCs. If a vector is passed, each value will be used for the corresponding PC.}
 
-\item{VAF}{If \emph{pca} is from prcomp, VAF argument is not needed. Otherwise, VAF is a String vector with text for the centers of the syndromic plots. The text generally corresponds to the variance accounted for (VAF) for the respective PCs.}
-
-\item{arbitrary_var}{Character or character vector with the names of the variables where loadings should be plot as absolute values.
-This is the case for categorical variables in categorical PCA where variables do not have direction.}
+\item{VAF}{If \emph{pca} is from \emph{prcomp} or \emph{princals}, VAF argument is not needed. Otherwise, VAF is a String vector with text for the centers of the syndromic plots. The text generally corresponds to the variance accounted for (VAF) for the respective PCs.}
 
 \item{arrow_size_multi}{Numeric. Controls the size of the arrows proportional to the loading. Default=10}
 
-\item{repel}{Boolean. Whether to repel the text for preventing text overlap. Default=TRUE}
+\item{repel}{Logical. Whether to repel the text for preventing text overlap. Default=TRUE}
 
-\item{plot_legend}{Boolean. Whether to plot the legend or not. Default=TRUE}
+\item{plot_legend}{Logical. Whether to plot the legend or not. Default=TRUE}
 
 \item{text_size}{Numeric. Controls for the size of the text. Default=9}
 
 \item{var_order}{Character. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 'abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.}
 
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+\item{colors}{Character vector of length 3. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of three colors, the lower color, the middle color and the higher color
 for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 
 \item{...}{Other arguments passed to \emph{extract_syndromic_plot()}}
 }
 \value{
-Returns a list of \emph{ggplot2} objects with one element for each PC plot. It also renders and saves the plots as *.pdf
-in the working directory or in the specified \emph{path}.
+Returns a list of \emph{ggplot2} objects with one element for each PC plot. Plots can be saved usign ggsave().
 }
 \description{
 Extract the syndromic plots from a pca solution or from a table of loadings for all the
@@ -64,7 +59,5 @@ specified PCs.
 }
 \examples{
 pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
-syndromic_plot(pca, mtcars, cutoff = 0.65, ndim=1)
-
 
 }

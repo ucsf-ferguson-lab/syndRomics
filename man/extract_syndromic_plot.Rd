@@ -9,13 +9,12 @@ extract_syndromic_plot(
   pc,
   cutoff = 0.5,
   VAF,
-  arbitrary_var = NULL,
   arrow_size_multi = 10,
   repel = F,
   plot_legend = T,
   text_size = 6,
   var_order = "abs decreasing",
-  colors = c("steelblue1", "firebrick1")
+  colors = c("steelblue1", "white", "firebrick1")
 )
 }
 \arguments{
@@ -29,14 +28,11 @@ for each PC. It can be extracted from a \emph{prcomp} or \emph{princals} object 
 \item{VAF}{String. Text for the center of the syndromic plot. The text generally corresponds to the variance accounted
 for (VAF) of the PC. If pca is the results of \emph{prcomp} or \emph{princals}, VAF is internally calculated.}
 
-\item{arbitrary_var}{Character or character vector with the names of the variables where loadings should be plot as absolute values.
-This is the case for categorical variables in categorical PCA where variables do not have direction.}
-
 \item{arrow_size_multi}{Numeric. Controls the size of the arrows proportional to the loading. Default=10}
 
-\item{repel}{Boolean. Whether to repel the text for preventing text overlap. Default=FALSE}
+\item{repel}{Logical. Whether to repel the text for preventing text overlap. Default=FALSE}
 
-\item{plot_legend}{Boolean. Whether to plot the legend or not. Default=TRUE}
+\item{plot_legend}{Logical. Whether to plot the legend or not. Default=TRUE}
 
 \item{text_size}{Numeric. Controls for the size of the text. Default=9}
 
@@ -47,8 +43,8 @@ to plot. If a numeric vector is provided, the variables will be ordered as speci
 vector is provided, the variables will be ordered in the same order as the variable names provided. In case of vector, non-specified
 variables will be excluded from the plot.}
 
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+\item{colors}{Character vector of length 3. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of three colors, the lower color, the middle color and the higher color
 for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 }
 \value{

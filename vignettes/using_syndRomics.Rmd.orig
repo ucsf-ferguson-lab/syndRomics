@@ -1,0 +1,424 @@
+---
+title: "Using syndRomics"
+author: "Abel Torres Espin"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Using syndRomics}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+**The package is in development, please contact Abel Torres Espin (abel.torresespin@UCSF or atpspin@gmail.com) if you find errors or have ideas about improving the package**
+
+# The syndRomics package
+
+In this document we will see examples of using the **syndRomics** package for helping in the process of disease patterns analysis by means of principal components. The package implements functions for component visualization, interpretation and stability analysis. For details on the analysis, please see the manuscript:
+
+    Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson. Reproducible analysis of disease space via principal components: a brief tutorial and R package (syndRomics). Under review
+
+
+The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. The **syndRomics** package contain utility functions for aiding in the process of component interpretation, visualization and stability analysis by means of the principal component.
+
+Here you will find the basics of the package. There is more than what is shown in this vignette, so we encourage you to explore further.
+
+# Setting up
+
+For this example we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](DOI:10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
+
+The same data have been used in the past by Adam Ferguson team to perform SCI syndromics analysis:
+
+    Ferguson AR, Irvine K-A, Gensel JC, Nielson JL, Lin A, Ly J, et al. Derivation of Multivariate Syndromic Outcome Metrics for Consistent Testing across Multiple Models of Cervical Spinal Cord Injury in Rats. PLOS ONE. 2013 Mar 27;8(3):e59712.
+
+We will use the following libraries:
+```{r}
+library(syndRomics)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+```
+
+Loading the data and extracting the variables at 6 weeks after injury. To simplify
+the analysis for this example, a list-wise deletion has been performed to deal with missing values. For an example of combining syndRomics with multiple imputation strategies see the paper.
+
+```{r}
+odc.df<-read.csv('odc-sci_26.csv', na.strings = '')
+odc.df.filter<-odc.df[-1,str_detect(colnames(odc.df),"_wk6")]
+odc.df.filter<-odc.df.filter[complete.cases(odc.df.filter),] #delete missing
+colnames(odc.df.filter)<-str_remove(colnames(odc.df.filter), "_wk6")
+colnames(odc.df.filter)<-str_remove(colnames(odc.df.filter), "AbsDev")#shorten var names
+
+odc.df.filter[1:10,1:6]
+```
+
+# PCA
+
+All functions in the package with the *pca* argument would accept the results of running either *prcomp()* for linear PCA, or *Gifi::princals()* for non-linear PCA.
+
+Here we illustrate the package using *prcomp()*. We first perform PCA on the data and calculate the standardized loadings.
+
+```{r}
+pca_data<-as.matrix(apply(odc.df.filter, 2, as.numeric))
+pca<-prcomp(pca_data, center = T, scale. = T)
+```
+
+We can extract the standardized loadings with a helper function:
+
+```{r}
+original_loadings<-stand_loadings(pca, pca_data)
+original_loadings[1:10,1:5]
+```
+
+
+# How many components to keep?
+
+The first question to respond after a PCA solution has been found is usually about knowing how many PCs are relevant. The goal is to determine the minimal set of components that can be used to describe the disease space. 
+
+The syndRomics package implements a nonparametric permutation test for the variance accounted for (VAF), previously suggested as a hypothesis test of whether a PC is generated at random or not. We can generate the null distribution for such test by means of permutation, which breaks the structure of the data. Note that there are several other methods broadly used to decide the "importance" of components. The number of permutations (P) affects the results and it should be chosen to be big enough.
+
+```{r}
+set.seed(500)
+per<-permut_pc_test(pca, pca_data, P=1000, ndim=5, statistic = "VAF")
+per$results
+```
+
+We can see that the three first components are statistically significant by the permutation test.
+
+We plot the original VAF vs. the permuted VAF
+```{r permuted VAF, fig.height=3, fig.width=3}
+plot(per, plot_resample = T)
+# ggsave("figure/permuted VAF-1.png", width = 3, height = 3)
+```
+
+# Component Interpretation (identity)
+
+**permut_pc_test()**
+
+The next step in the analysis is to interpret the meaning of the components. That is, providing the PCs with a "identity". This is done by looking at metrics that measure the impact of PCs into variables. The syndRomic package works with standardized loadings and communalities. Standardized loadings are interpreted as the correlation coefficient between a PC and a variable, indicative of the contribution of variables in magnitude and direction of each PC. Communalities are the sum of squared loadings for each variable for the PCs retained during component selection, and they represent how much of the variance of each variable can be explained by the total number of kept components. These can be interpreted as the impact of a variable in the chosen PCA solution formed by the retained PCs. 
+
+To decide PC identity, usually only the higher loadings are used. The cut-off to determine if a loading is "important" or high enough in the interpretation of a PC can be decided in several ways. Using the knowledge of the researcher, several authors suggested rules of thumb for such threshold. Others have suggested a more analytic approach. The syndRomic package implements a non-parametric permutation test for loadings as previously suggested (Buja and Eyuboglu, 1992; Linting et al., 2011).
+
+```{r}
+s_per<-permut_pc_test(pca, pca_data, P=1000, ndim=3, statistic = 's.loadings', perm.method = 'permV')
+s_per$results
+```
+
+We can see that the cut-off of significance (for alpha =0.05) using the adjusted p value is around |0.25| for PC1, around |0.3| for PC2 and around |0.45| for PC3 based on the permutation test.
+
+We can get a barmap plot of the loadings and the permuted distribution (error bars represents mean +/- 95%CI of permuted samples)
+
+```{r s plot 1, fig.width=6, fig.height=3.5}
+plot(s_per, plot_resample = T)
+# ggsave("figure/s plot 1-1.png", width = 6, height = 3.5)
+```
+
+We can also plot a specific PC in isolation.
+
+```{r s plot 2, fig.width=3.6, fig.height=3.5}
+plot(s_per, plot_resample = T, ndim = 2)
+# ggsave("figure/s plot 2-1.png", width = 6, height = 3.5)
+```
+
+We will see plotting in detail in the visualization section.
+
+The same analysis can be performed for communalities. See *?permut_pc_test* for details
+
+# Component stability
+
+**pc_stability()**
+
+Component stability refers to the sensitivity of the PCs to variation, and it is important to study to understand the robustness of the analysis. The package implements functions to help in the process of studying the component stability to data selection variability using resampling methods such as bootstrapping. A robust PC would have small sensitivity to data variations, and thus the goal of the stability analysis is to determine such sensitivity. The package uses nonparametric bootstrapping as previously described for component stability (Babamoradi et al., 2013; Linting et al., 2007; Timmerman et al., 2007; Zientek & Thompson, 2007).
+
+## Stability measures
+
+Component stability can be measured at the component level or at the level of loadings or communalities. At the component level, the package includes: Congruence coefficient, Pearson's r, root mean square error (RMSE) and Cattell's s index (see *?component_similarity for details*). At the level of loadings and communalities, the package allows for computing nonparametric confident intervals. A narrow confident region means that the loading or communality is stable to resampling variations. The *pc_stability()* function returns the accelerated and bias-corrected 95% confident interval for the loadings by default as it has been shown to be robust in different simulation conditions (Efron, B. 1987). For the similarity metrics, the confident interval by the percentile method is returned.
+
+See *?pc_stability* for more options.
+
+```{r}
+booted_PCA<-pc_stability(pca, pca_data,ndim = 3,B =1000, similarity_metric = "all")
+booted_PCA$results
+```
+
+**Component similarity**
+```{r}
+booted_PCA$PC_similarity
+```
+
+**Plotting loadings and CI**
+```{r boot 1, fig.width=6, fig.height=3.5}
+plot(booted_PCA, plot_resample = T)
+# ggsave("figure/boot 1-1.png", width = 6, height = 3.5)
+```
+
+**Plotting communalities and CI**
+```{r boot 2, fig.width=5, fig.height=3.5}
+plot(booted_PCA, communalities = T, plot_resample = T)
+# ggsave("figure/boot 2-1.png", width = 5, height = 3.5)
+```
+
+# Let's get visual
+
+Visualizations might aid in the process of component interpretation. The syndRomics package implements 4 different visualizations: syndromic plots, heatmap of loadings and barmap of loadings or communalities, and VAF plots.
+
+Any of these visualization can be obtained from either the results of the *prcomp()* or *princals()* functions, or a data.frame containing the loadings or VAF. That allows for generating the plots from loadings obtained by any other function/package/software. In the case of pass a data.frame to the plotting functions, the structure should be as follow: 
+
+    First column named "Variables" and a column for each PCs. One row per variable. The values are the loadings.
+
+In case a data.frame of loadings is passed to the plotting functions, the VAF argument must be given as a character vector of the same lenght of the PCs to plot (ndim) and format: c("60.1%","20.2%") for example. If the results of *prcomp()* or *princals()* are passed, VAF is internally calculated.
+
+## Syndromic plots
+
+The syndromic plot were designed and first published by Ferguson et al, 2013. The plot consist on a middle convex triangle (the intersection of a Venn diagram with 3 sets) displaying the variance accounted for (VAF) for a PC and arrows pointing to the center of the triangle representing each variable. The width of each arrow and the color are proportional to the standardized loading they represent. The variables to plot are determined by a threshold of “importance” for the loadings (cutoff). Syndromic plots are especially useful to report PC identity in publication.
+
+Note that cutoff can be of different values for each extracted plot.
+
+```{r s plot 3, fig.width=6, fig.height=6}
+splot<-syndromic_plot(pca, pca_data, ndim = 3,cutoff = 0.45, text_size = 5)
+splot$PC1
+
+# ggsave("figure/s plot 3-1.png", width = 6, height = 6)
+```
+
+The *syndromic_plot()* function returns a ggplot2 object that can be further tuned using the ggplot2 package. You will notice that the arrows do not look quite right in Windows machines. This is a problem with the plotting device. Saving the plot to pdf makes it nicer and it can be easily changes in case need further tuning for publication.
+
+```{r out.width=500, out.height=500}
+ggsave(plot = splot$PC1, filename = 'figure/PC1.pdf', width = 9, height = 9)
+knitr::include_graphics("figure/PC1.pdf")
+```
+
+We can customize some aspects of the plot:
+
+**Colors**
+
+The colors argument take three colors in the order: negative loading, zero loading, positive loading
+
+```{r s plot 4, fig.width=6, fig.height=6}
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, colors = c("orange", "white","purple"))
+# ggsave("figure/s plot 4-1.png", width = 6, height = 6)
+```
+
+**Arrow width**
+
+The size of the arrows can be controlled with the *arrow_size_multi* argument. This value is a multiplayer such that all arrows will be proportional to loadings by this factor. Default is 10.
+
+```{r s plot 5, fig.width=6, fig.height=6}
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, arrow_size_multi = 2)
+# ggsave("figure/s plot 5-1.png", width = 6, height = 6)
+```
+
+```{r s plot 6, fig.width=6, fig.height=6}
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, arrow_size_multi = 15)
+# ggsave("figure/s plot 6-1.png", width = 6, height = 6)
+```
+
+**Reorder variables**
+
+Variables can be ordered either by loadings or by a specified order. The options for ordering by loadings are (starting at 12 o’clock and moving counterclockwise): 
+
+*   'abs decreasing': plot by decreasing absolute value
+*   'abs increasing': plot by increasing absolute value 
+*   'decreasing'
+*   'increasing’
+
+```{r s plot 7, fig.width=6, fig.height=6}
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order = "increasing")
+# ggsave("figure/s plot 7-1.png", width = 6, height = 6)
+```
+
+```{r s plot 8, fig.width=6, fig.height=6}
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order = "abs increasing")
+# ggsave("figure/s plot 8-1.png", width = 6, height = 6)
+```
+
+Variables can also be reordered as you wish if we specify a vector of numbers in the order that we want (starting at 12 o’clock and moving counterclockwise). For example, alphabetically.
+
+```{r s plot 9, fig.width=6, fig.height=6}
+var_names<-colnames(pca_data)
+syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order =order(var_names))
+# ggsave("figure/s plot 9-1.png", width = 6, height = 6)
+```
+
+## Heatmap and Barmap plots
+
+Heatmap and barmap plots are other visualizations of the loadings (and communalities in case of barmaps) offering other options beyond the syndromic plot, also returning ggplot2 objects. The major difference between these two plots and the syndromic plot is that both heatmap and barmap plots display all variables (although a subset can be specified using the *vars* argument). This is particularly useful when there are too many variables to plot that might make syndromic plots too crowded, or to compare loadings between PCs more easily. These plots are implemented in the *heatmap_loading()*, the *barmap_loading()*, and the *barmap_commun()* functions. 
+
+```{r s plot 10, fig.width=3.5, fig.height=3.5}
+heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_values = F)
+# ggsave("figure/s plot 10-1.png", width = 3.5, height = 3.5)
+```
+
+Note that for barmap plots we specify a vector of dimensions to plot (e.g. 1:3)
+```{r s plot 11, fig.width=6, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45)
+# ggsave("figure/s plot 11-1.png", width = 6, height = 3.5)
+```
+
+Although we can also plot a single PC
+
+```{r s plot 12, fig.width=4, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=2, cutoff = 0.45)
+# ggsave("figure/s plot 12-1.png", width = 4, height = 3.5)
+```
+
+Colors and variable order can be modified as we have seen for the syndromic plots.
+
+```{r s plot 13, fig.width=6, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, colors= c("orange2", "white","purple"))
+# ggsave("figure/s plot 13-1.png", width = 6, height = 3.5)
+```
+
+```{r s plot 14, fig.width=3.5, fig.height=3.5}
+heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_values = F,
+                colors= c("orange2", "white","purple"), vars = var_names)
+# ggsave("figure/s plot 14-1.png", width = 6, height = 3.5)
+```
+
+```{r s plot 15, fig.width=4, fig.height=3.5}
+barmap_commun(pca, pca_data, ndim=1:3, colors= c("white","purple"))
+# ggsave("figure/s plot 15-1.png", width = 4, height = 3.5)
+```
+
+**Values.** Whether to plot the value of the loadings or a star indicating the |loadings| >= cutoff can be controlled by the *star_value* and the *text_value* arguments.
+
+```{r s plot 16, fig.width=6.5, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = F,text_values = T)
+# ggsave("figure/s plot 16-1.png", width = 6.5, height = 3.5)
+```
+
+```{r s plot 17, fig.width=3.5, fig.height=3.5}
+heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_values = T,
+                colors= c("orange2", "white","purple"), vars = var_names)
+# ggsave("figure/s plot 17-1.png", width = 3.5, height = 3.5)
+```
+
+## VAF plots
+
+There are two styles of VAF plots:
+
+**line**
+
+```{r s plot 18, fig.width=5, fig.height=3.5}
+VAF_plot(pca, pca_data, ndim=1:10)
+# ggsave("figure/s plot 18-1.png", width = 5, height = 3.5)
+```
+
+**VAF reduced**
+
+```{r s plot 19, fig.width=3.5, fig.height=1}
+VAF_plot(pca, pca_data, ndim=1:5, style = "reduced")
+# ggsave("figure/s plot 19-1.png", width = 3.5, height = 1)
+```
+
+## The plot method
+
+There are two ways to plot the results of the *pc_stability()* and *permut_pc_test()*. The results for these can be pass to the VAF plot or the barmap plot functions or using the generic *plot()* function.
+
+For example, permutation test of loadings can be obtained by either way:
+
+```{r s plot 20, fig.width=6.5, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, resample_ci = s_per$results)
+# ggsave("figure/s plot 20-1.png", width = 6.5, height = 3.5)
+```
+
+```{r s plot 21, fig.width=6.5, fig.height=3.5}
+plot(s_per, plot_resample = T, ndim = 1:3)
+# ggsave("figure/s plot 21-1.png", width = 6.5, height = 3.5)
+```
+
+This is because *pc_stability()* and *permut_pc_test()* return an object of class "syndromics" that is recognized by *plot()* and redirected to the relevant plot. The same arguments used in the respective plot function can be passed to *plot()*
+
+```{r s plot 22.0, fig.width=6.5, fig.height=3.5}
+plot(s_per, plot_resample = T, ndim = 1:3, colors=c("orange2", "white","purple"))
+# ggsave("figure/s plot 22.0-1.png", width = 6.5, height = 3.5)
+```
+
+The resamples can be plot as follow as well:
+
+**VAF line**
+
+```{r s plot 22, fig.width=3.5, fig.height=3}
+VAF_plot(pca, pca_data, ndim=1:5, resample_ci = per$results)
+# ggsave("figure/s plot 22-1.png", width = 3.5, height = 3)
+```
+
+**Bootstrap**
+```{r s plot 23, fig.width=6.5, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, resample_ci = booted_PCA$results)
+# ggsave("figure/s plot 23-1.png", width = 6.5, height = 3.5)
+```
+
+**Permutation**
+```{r s plot 24, fig.width=6.5, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3, resample_ci = s_per$results)
+# ggsave("figure/s plot 24-1.png", width = 6.5, height = 3.5)
+```
+
+## Tuning up the plots
+
+The plots generated by the **syndRomics** package are ggplot2 objects that can be further modified using the ggplot2 package. For instance, we can play around with the legend:
+
+**Legend**
+
+```{r s plot 25, fig.width=6, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3)+
+  theme(legend.position = 'bottom', legend.key.width = unit(15,'mm'),
+           legend.key.height = unit(2,'mm'),legend.justification = 'left',
+           legend.title = element_text(vjust = 1.3),panel.spacing = unit(5,'mm'))
+# ggsave("figure/s plot 25-1.png", width = 6, height = 3.5)
+```
+
+**Titles**
+
+```{r s plot 26, fig.width=6, fig.height=3.5}
+barmap_loading(pca, pca_data, ndim=1:3)+
+  ggtitle("Barmap plot for ODC-SCI:26 PCA")+
+  theme(plot.title = element_text(color="purple", size=9, hjust=0.5))+
+  labs(fill="Loadings")
+# ggsave("figure/s plot 26-1.png", width = 6, height = 3.5)
+```
+
+
+# More information
+
+You can read more about the specific functions using the *help()* or *?*. A more detailed explanation of the implementation can be find in the paper.
+
+    Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson. Reproducible analysis of disease space via principal components: a brief tutorial and R package (syndRomics). Under review
+
+# References
+
+*   Ferguson AR, Stück ED, Nielson JL. Syndromics: A Bioinformatics Approach for Neurotrauma Research. Transl Stroke Res. 2011 Dec;2(4):438–54.
+
+*   Buja A, Eyuboglu N. Remarks on Parallel Analysis. Multivar Behav Res. 1992 Oct 1;27(4):509–40
+
+*   Linting M, van Os BJ, Meulman JJ. Statistical Significance of the Contribution of Variables to the PCA solution: An Alternative Permutation Strategy. Psychometrika. 2011 Jul 1;76(3):440–60
+
+*   Linting M, Meulman JJ, Groenen PJF, van der Kooij AJ. Stability of nonlinear principal components analysis: An empirical study using the balanced bootstrap. Psychol Methods. 2007;12(3):359–79. 
+
+*   Babamoradi H, van den Berg F, Rinnan Å. Bootstrap based confidence limits in principal component analysis — A case study. Chemom Intell Lab Syst. 2013 Jan 15;120:97–105. 
+
+*   Timmerman ME, Kiers HAL, Smilde AK. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. Br J Math Stat Psychol. 2007 Nov;60(Pt 2):295–314. 
+
+*   Zientek LR, Thompson B. Applying the bootstrap to the multivariate case: Bootstrap component/factor analysis. Behav Res Methods. 2007 May;39(2):318–25.
+
+*   Efron, B. (1987). Better Bootstrap Confidence Intervals. Journal of the American Statistical Association, 82(397), 171–185. https://doi.org/10.1080/01621459.1987.10478410
+  
+*   Ferguson AR, Irvine K-A, Gensel JC, Nielson JL, Lin A, Ly J, et al. Derivation of Multivariate Syndromic Outcome Metrics for Consistent Testing across Multiple Models of Cervical Spinal Cord Injury in Rats. PLOS ONE. 2013 Mar 27;8(3):e59712.
+
+# Session information
+```{r}
+sessionInfo()
+```
+
