@@ -13,15 +13,11 @@ permut_pc_test(
   conf = 0.95,
   adj.method = "BH",
   perm.method = "permV",
-  plot = T,
-  colors = c("steelblue", "orange"),
   ...
 )
 }
 \arguments{
-\item{pca}{Object of class \emph{prcomp}, \emph{princals}, or \emph{data.frame}. If object is a \emph{prcomp} or \emph{princals} object, \emph{pca_data} is required, and
-the loadings will be extracted. If object is a data.frame object, the dataframe needs to be formatted as: first column named \emph{Variables} and all other columns corresponding to a PC.
-One row per variable. The values are the loadings.}
+\item{pca}{Object of class \emph{prcomp}, \emph{princals}.}
 
 \item{pca_data}{Data passed to the \emph{prcomp} or \emph{princals} function.}
 
@@ -42,31 +38,26 @@ See \emph{?p.adjust.methods}. Default="BH"}
 concomitantly (Fig. 2A) as opposite of the "permV" permutation strategy (Linting et al., 2011) where
 variables are permuted one at the time. If statistic is set to "VAF", \emph{perm.method} "permD" will be
 used. Default="permV".}
-
-\item{plot}{Boolean. Whether to rerun a ggplot2 object containing a plot of "VAF", "loadings" or "communalities" as specified in \emph{statistic}.}
-
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the first color is used for the original VAF, the second color
-is used for the permuted VAF and error bars for the gradient used in the plot.
-Hexadecimal number can be obtained using \emph{rgb} for example.}
-
-\item{...}{Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE}
 }
 \value{
-List containing the following objects
+List of class "syndromics" containing the following objects
 \describe{
-  \item{perm.methods}{Character for the used permutation method}
-  \item{per_list}{List of P loading matrices for the P permuted samples}
-  \item{statistic}{Character for the used statistic}
-  \item{adj.method}{Character for the used method for adjusting p values}
-  \item{per_plot}{ggplot2 object with the plot of VAF, loadings or communalities depending on the specified statistic}
-  \item{results}{List of data.frame(s) with the results of the permutation test}
+  \item{\strong{methods}}{Character for the used method to obtain the object. "permutation"}
+  \item{\strong{statistic}}{Statistic use in the permutation analysis}
+  \item{\strong{perm.methods}}{Character for the used permutation method}
+  \item{\strong{ndim}}{Value specified in the ndim argument}
+  \item{\strong{conf}}{Confidence level used to compute CIs}
+  \item{\strong{per_sample}}{List of P loading matrices for the P permuted samples}
+  \item{\strong{adj.method}}{Character for the used method for adjusting p values}
+  \item{\strong{pca}}{Contains the object passed to the pca argument}
+  \item{\strong{pca_data}}{Contains the object passed to the pca_data argument}
+  \item{\strong{results}}{Object containing the results of the analysis}
 }
 }
 \description{
 Compute a nonparametric permutation test for a PCA solution. Two options are
-possible: hypothesis testing of the total variance accounted for (VAF) for each component as in XXX ref, and
-hypothesis testing of the standardized loadings as in XXX ref.
+possible: hypothesis testing of the total variance accounted for (VAF) for each component, and
+hypothesis testing of the standardized loadings and communalities.
 }
 \details{
 Nonparametric permutation for hypothesis testing of the VAF of component, the loadings or communalities

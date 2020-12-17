@@ -7,18 +7,18 @@
 barmap_commun(
   pca,
   pca_data,
-  ndim = 10,
+  ndim = 1:5,
   load_list = NULL,
   conf = 0.95,
   plot_original = T,
   plot_list_center = F,
-  plot_title = "Communalities",
-  legend_title = "communa.",
+  plot_legend = T,
   text_values = F,
   text_size = 2,
   var_order = "increasing",
   vars = NULL,
-  colors = c("white", "firebrick1")
+  colors = c("white", "firebrick1"),
+  gradient_color = T
 )
 }
 \arguments{
@@ -30,23 +30,22 @@ One row per variable. The values are the loadings.}
 
 \item{ndim}{Numeric. Number of PCs to plot}
 
-\item{load_list}{List. List of loading matrices used to plot percentile confidence intervals around the average. If NULL, no error bars are ploted. Default=NULL}
+\item{load_list}{List. List of loading matrices used to plot percentile confidence intervals around
+the average. If NULL, no error bars are plotted. Default=NULL}
 
 \item{conf}{Numeric. Confidence level used when \emph{load_list} is provided.}
 
-\item{plot_original}{Boolean. Whether to plot the communalities obtained from the values passed to \emph{pca} and \emph{pca_data}.}
+\item{plot_original}{Logical. Whether to plot the communalities obtained from the values passed to \emph{pca} and \emph{pca_data}.}
 
-\item{plot_list_center}{Boolean. Whether to plot the average communalities obtained from \emph{load_list}.}
+\item{plot_list_center}{Logical. Whether to plot the average communalities obtained from \emph{load_list}.}
 
-\item{plot_title}{String. Title of the plot.}
+\item{plot_legend}{Logical. Whether legend should be plotted.}
 
-\item{legend_title}{String. Title of the legend.}
-
-\item{text_values}{Boolean. Whether to plot the values of the communalities or not. Default=FALSE}
+\item{text_values}{Logical. Whether to plot the values of the communalities or not. Default=FALSE}
 
 \item{text_size}{Numeric. Size of the text_values.}
 
-\item{var_order}{Character. Specify the order of the variables in the plot by the communalitys values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
+\item{var_order}{Character. Specify the order of the variables in the plot by the communality values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 'abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.}
 
 \item{vars}{Character vector. Variables will be ordered as the provided variable names. Non-specified
@@ -55,12 +54,18 @@ variables will be excluded from the plot. By default variables are ordered in al
 \item{colors}{Character vector of length 2. Vector with the character name or
 hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
 for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
+
+\item{gradient_color}{Logical. Whether colors should be plotted as a gradient proportional to the communalities.}
 }
 \value{
 Returns a \emph{ggplot2} object.
 }
 \description{
 Plot a Barmap of the communalities from a PCA solution given the first ndim PCs.
+}
+\examples{
+pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
 }
 \author{
 Abel Torres Espin

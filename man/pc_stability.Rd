@@ -11,20 +11,15 @@ pc_stability(
   B = 1000,
   sim = "ordinary",
   communalities = T,
-  test_similarity = T,
   similarity_metric = "all",
   s_cut_off = 0.1,
   ci_type = "bca",
   conf = 0.95,
-  barmap_plot = T,
-  colors = c("steelblue1", "firebrick1"),
   ...
 )
 }
 \arguments{
-\item{pca}{Object of class \emph{prcomp}, \emph{princals}, or \emph{data.frame}. If object is a \emph{prcomp} or \emph{princals} object, \emph{pca_data} is required, and
-the loadings will be extracted. If object is a data.frame object, the dataframe needs to be formatted as: first column named \emph{Variables} and all other columns corresponding to a PC.
-One row per variable. The values are the loadings.}
+\item{pca}{Object of class \emph{prcomp}, \emph{princals}.}
 
 \item{pca_data}{Data passed to the \emph{prcomp} or \emph{princals} function.}
 
@@ -37,14 +32,10 @@ From \emph{boot}: A character string indicating the type of simulation required.
 Possible values are "ordinary" (the default), "parametric", "balanced",
 "permutation", or "antithetic". Default="ordinary".}
 
-\item{communalities}{Boolean. Whether to compute and return communalities.}
-
-\item{test_similarity}{Boolean. Whether to compute component similarity by the
-specified \emph{similarity_metric} and the nonparametric percentile confident interval.
-See \emph{?component_similarity} for more information. Default=TRUE}
+\item{communalities}{Logical. Whether to compute and return communalities.}
 
 \item{similarity_metric}{character or character vector. Specify the similarity metric
-to use when \emph{test_similarity}=TRUE. Possible values are "cc_index" (congruence coefficient),
+to use. Set "none" to not return similarity metrics. Possible values are "cc_index" (congruence coefficient),
 "r_correlation" (Pearson's r), "rmse" (root mean squared error), "s_index' (Cattell's s metric), or "all".
 See \emph{?component_similarity} for more details on the available metrics. Default="all".}
 
@@ -59,32 +50,26 @@ we have set 'bca' as the default. See ref for more details.}
 
 \item{conf}{Numeric. Level of confidence region for the confidence interval. E.g. 0.95 generates 95CI. Default=0.95}
 
-\item{barmap_plot}{Boolean. Whether to generate a barmap plot of the bootstrapped loadings or not.
-See \emph{?barmap_loadings} for details. Default=TRUE}
-
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
-for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
-
-\item{...}{Other arguments passed to the \emph{barmap_loadings} or \emph{barmap_commun} function when \emph{barmap_plot}=TRUE.
-For example, the colors for the bars.}
+\item{...}{Other arguments passed to the \emph{boot} function.}
 }
 \value{
-Returns a list object.
+Returns a list object of class "syndromics".
 \describe{
+  \item{\strong{method}}{Specify the method used to obtain the syndromics list object}
+  \item{\strong{pca}}{Contains the object passed to the pca argument}
+  \item{\strong{pca_data}}{Contains the object passed to the pca_data argument}
+  \item{\strong{ndim}}{Value specified in the ndim argument}
+  \item{\strong{ci_method}}{Method used to compute CIs}
+  \item{\strong{conf}}{Confidence level used to compute CIs}
+  \item{\strong{results}}{Object containing the results of the analysis}
   \item{\strong{boot_sample}}{A list of length B containing the resampled loadings.}
-  \item{\strong{results}}{
-    \describe{
-       \item{\strong{boot_mean}}{A numeric matrix containing the mean loadings of the bootstrapped sample.}
-       \item{\strong{ci_low and ci_high}}{A numeric matrix with the lower and upper CI respectively.}
-    }}
-  \item{\strong{pc_similarity}}{A list of results when \emph{test_similarity}=TRUE.}
+  \item{\strong{pc_similarity}}{A list of results when \emph{similarity_metric} is not "none".}
   \describe{
    \item{\strong{similarity_mean}}{A numerix matrix with the mean of the chosen similarity metric.}
    \item{\strong{similarity_ci_low and similarity_ci_high}}{A numeric matrix with the lower and upper CI respectively.}
    }
- \item{\strong{boot_barmap_loadings}}{A ggplot2 object with a barmap plot of loadings of the bootstrapped solution.}
- \item{\strong{boot_barmap_loadings}}{A ggplot2 object with a barmap plot of communalities of the bootstrapped solution.}
+  \item{\strong{B}}{Number of resamples computed.}
+  \item{\strong{communalities}}{If communalities=TRUE, the results are returned here.}
 }
 }
 \description{
@@ -96,6 +81,10 @@ the \strong{boot} package.
 The number of bootstrap samples is set to 1000 by default, as it has been shown to be a robust number in most conditions of
 data complexity and sample size. The user must be careful on setting such number too low which would reduce the performance
 of the approximation. However, values that are too high might unnecessarily increase computing time with little gain (REFs).
+}
+\examples{
+pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
 }
 \references{
 Efron B. Better Bootstrap Confidence Intervals. J Am Stat Assoc. 1987 Mar 1;82(397):171–85.

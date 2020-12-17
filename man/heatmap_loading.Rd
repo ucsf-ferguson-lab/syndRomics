@@ -7,16 +7,14 @@
 heatmap_loading(
   pca,
   pca_data,
-  ndim = 10,
-  cutoff = 0.5,
-  arbitrary_var = NULL,
-  plot_title = "Standardized loadings",
+  ndim = 1:10,
+  cutoff = 0,
   legend_title = "s. loading",
   text_values = T,
   star_values = F,
   text_size = 2,
   vars = NULL,
-  colors = c("steelblue1", "firebrick1")
+  colors = c("steelblue1", "white", "firebrick1")
 )
 }
 \arguments{
@@ -29,18 +27,13 @@ One row per variable. The values are the loadings.}
 \item{ndim}{Numeric. Number of PCs to plot}
 
 \item{cutoff}{Numeric or numeric vector of length \emph{ndim}.
-Value of the loadings threshold (i.e. |loadings| >= cutoff) to plot with stars. Default = 0.5}
-
-\item{arbitrary_var}{Character or character vector with the names of the variables where the loadings should be plot as absolute values.
-This is the case for categorical variables in categorical PCA where variables do not have direction.}
-
-\item{plot_title}{String. Title of the plot. 'Standardized loadings' by default.}
+Value of the loadings threshold (i.e. |loadings| >= cutoff) to plot with stars. Default = 0}
 
 \item{legend_title}{String. Title of the legend. 's. loading' by default.}
 
-\item{text_values}{Boolean. Whether to plot the values of the loadings or not. Default=TRUE}
+\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default=TRUE}
 
-\item{star_values}{Boolean. Whether to plot a star in |loadings|>=cutoff. Only relevant if
+\item{star_values}{Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 \emph{text_values}=FALSE. Default=FALSE}
 
 \item{text_size}{Numeric. Size of the text_values.}
@@ -48,8 +41,8 @@ This is the case for categorical variables in categorical PCA where variables do
 \item{vars}{Character vector. Variables will be ordered as the provided variable names. Non-specified
 variables will be excluded from the plot. By default variables are ordered in alphabetically by ggplot.}
 
-\item{colors}{Character vector of length 2. Vector with the character name or
-hexadecimal number (e.g. "#FF0000") of two colors, the lower color and the higher color
+\item{colors}{Character vector of length 3. Vector with the character name or
+hexadecimal number (e.g. "#FF0000") of three colors, the lower color, the middle color and the higher color
 for the gradient used in the plot. Hexadecimal number can be obtained using \emph{rgb} for example.}
 }
 \value{
@@ -57,6 +50,10 @@ Returns a \emph{ggplot2} object.
 }
 \description{
 Plot a heatmap of the standardized loadings from a PCA solution.
+}
+\examples{
+pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
 }
 \author{
 Abel Torres Espin

@@ -13,6 +13,9 @@ One row per variable. The values are the loadings.}
 
 \item{pca_data}{Data passed to the \emph{prcomp} or \emph{princals} function.}
 }
+\value{
+A data.frame with the standardized loadings in the form of variables as rows and components as columns.
+}
 \description{
 This is a wrapper function for \emph{stand_loadings()}
 with added functionalities such as error breakers that is used by
