@@ -120,7 +120,7 @@ We plot the original VAF vs. the permuted VAF
 plot(per, plot_resample = T)
 ```
 
-![plot of chunk permuted VAF](./vignettes/figure/permuted VAF-1.png)
+![plot of chunk permuted VAF](vignettes/figure/permuted VAF-1.png?raw=true)
 
 ```r
 # ggsave("figure/permuted VAF-1.png", width = 3, height = 3)
