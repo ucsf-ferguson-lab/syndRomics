@@ -5,14 +5,14 @@ R syndRomics package
 
 # The syndRomics package
 
-In this document we will see examples of using the **syndRomics** package for helping in the process of disease patterns analysis by means of principal components. The package implements functions for component visualization, interpretation and stability analysis. For details on the analysis, please see the manuscript:
+We will see examples of using the **syndRomics** package for helping in the process of disease patterns analysis by means of principal components. The package implements functions for component visualization, interpretation and stability analysis. For details on the analysis, please see the manuscript:
 
     Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson. Reproducible analysis of disease space via principal components: a brief tutorial and R package (syndRomics). Under review
 
 
 The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. The **syndRomics** package contain utility functions for aiding in the process of component interpretation, visualization and stability analysis by means of the principal component.
 
-Here you will find the basics of the package. There is more than what is shown in this vignette, so we encourage you to explore further.
+Here you will find the basics of the package. There is more, so we encourage you to explore further.
 
 # Setting up
 
@@ -166,7 +166,7 @@ We can get a barmap plot of the loadings and the permuted distribution (error ba
 plot(s_per, plot_resample = T)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 1-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 1-1.png">
 
 
 The same analysis can be performed for communalities. See *?permut_pc_test* for details
@@ -247,7 +247,7 @@ booted_PCA$PC_similarity
 plot(booted_PCA, plot_resample = T)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/boot 1-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/boot 1-1.png">
 
 
 **Plotting communalities and CI**
@@ -256,7 +256,7 @@ plot(booted_PCA, plot_resample = T)
 plot(booted_PCA, communalities = T, plot_resample = T)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/boot 2-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/boot 2-1.png">
 
 # Let's get visual
 
@@ -280,7 +280,7 @@ splot<-syndromic_plot(pca, pca_data, ndim = 3,cutoff = 0.45, text_size = 5)
 splot$PC1
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 3-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 3-1.png">
 
 The *syndromic_plot()* function returns a ggplot2 object that can be further tuned using the ggplot2 package. You will notice that the arrows do not look quite right in Windows machines. This is a problem with the plotting device. Saving the plot to pdf makes it nicer and it can be easily changes in case need further tuning for publication.
 
@@ -302,7 +302,7 @@ The colors argument take three colors in the order: negative loading, zero loadi
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, colors = c("orange", "white","purple"))
 #> $PC1
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 4-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 4-1.png">
 
 **Arrow width**
 
@@ -312,12 +312,12 @@ The size of the arrows can be controlled with the *arrow_size_multi* argument. T
 ```r
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, arrow_size_multi = 2)
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 5-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 5-1.png">
 
 ```r
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, arrow_size_multi = 15)
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 6-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 6-1.png">
 
 
 **Reorder variables**
@@ -333,14 +333,14 @@ Variables can be ordered either by loadings or by a specified order. The options
 ```r
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order = "increasing")
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 7-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 7-1.png">
 
 
 ```r
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order = "abs increasing")
 #> $PC1
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 8-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 8-1.png">
 
 Variables can also be reordered as you wish if we specify a vector of numbers in the order that we want (starting at 12 o’clock and moving counterclockwise). For example, alphabetically.
 
@@ -350,7 +350,7 @@ var_names<-colnames(pca_data)
 syndromic_plot(pca, pca_data, ndim=1,cutoff = 0.45, text_size = 5, var_order =order(var_names))
 #> $PC1
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 9-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 9-1.png">
 
 ## Heatmap and Barmap plots
 
@@ -361,14 +361,14 @@ Heatmap and barmap plots are other visualizations of the loadings (and communali
 heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_values = F)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 10-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 10-1.png">
 
 Note that for barmap plots we specify a vector of dimensions to plot (e.g. 1:3)
 
 ```r
 barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45)
 ```
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 11-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 11-1.png">
 
 Although we can also plot a single PC
 
@@ -376,7 +376,7 @@ Although we can also plot a single PC
 barmap_loading(pca, pca_data, ndim=2, cutoff = 0.45)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 12-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 12-1.png">
 
 Colors and variable order can be modified as we have seen for the syndromic plots.
 
@@ -385,7 +385,7 @@ Colors and variable order can be modified as we have seen for the syndromic plot
 barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, colors= c("orange2", "white","purple"))
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 13-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 13-1.png">
 
 
 ```r
@@ -393,14 +393,14 @@ heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_va
                 colors= c("orange2", "white","purple"), vars = var_names)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 14-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 14-1.png">
 
 
 ```r
 barmap_commun(pca, pca_data, ndim=1:3, colors= c("white","purple"))
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 15-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 15-1.png">
 
 **Values.** Whether to plot the value of the loadings or a star indicating the |loadings| >= cutoff can be controlled by the *star_value* and the *text_value* arguments.
 
@@ -409,7 +409,7 @@ barmap_commun(pca, pca_data, ndim=1:3, colors= c("white","purple"))
 barmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = F,text_values = T)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 16-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 16-1.png">
 
 
 ```r
@@ -417,7 +417,7 @@ heatmap_loading(pca, pca_data, ndim=1:3, cutoff = 0.45, star_values = T, text_va
                 colors= c("orange2", "white","purple"), vars = var_names)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 17-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 17-1.png">
 
 ## VAF plots
 
@@ -452,14 +452,14 @@ For example, permutation test of loadings can be obtained by either way:
 barmap_loading(pca, pca_data, ndim=1:3, resample_ci = s_per$results)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 20-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 20-1.png">
 
 
 ```r
 plot(s_per, plot_resample = T, ndim = 1:3)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 21-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 21-1.png">
 
 This is because *pc_stability()* and *permut_pc_test()* return an object of class "syndromics" that is recognized by *plot()* and redirected to the relevant plot. The same arguments used in the respective plot function can be passed to *plot()*
 
@@ -468,7 +468,7 @@ This is because *pc_stability()* and *permut_pc_test()* return an object of clas
 plot(s_per, plot_resample = T, ndim = 1:3, colors=c("orange2", "white","purple"))
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 22.0-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 22.0-1.png">
 
 The resamples can be plot as follow as well:
 
@@ -487,7 +487,7 @@ VAF_plot(pca, pca_data, ndim=1:5, resample_ci = per$results)
 barmap_loading(pca, pca_data, ndim=1:3, resample_ci = booted_PCA$results)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 23-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 23-1.png">
 
 **Permutation**
 
@@ -495,7 +495,7 @@ barmap_loading(pca, pca_data, ndim=1:3, resample_ci = booted_PCA$results)
 barmap_loading(pca, pca_data, ndim=1:3, resample_ci = s_per$results)
 ```
 
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 24-1.png">
+<img width="50%" height= "50%" src="./vignettes/figure/s plot 24-1.png">
 
 ## Tuning up the plots
 
