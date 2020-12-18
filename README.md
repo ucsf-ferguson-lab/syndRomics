@@ -1,22 +1,17 @@
 # syndRomics
 R syndRomics package
 
-**The package is in development, please contact Abel Torres Espin (abel.torresespin@UCSF or atpspin@gmail.com) if you find errors or have ideas about improving the package**
+**The package is in development, please open an issue if you find errors or have ideas about improving the package**
 
-# The syndRomics package
-
-We will see examples of using the **syndRomics** package for helping in the process of disease patterns analysis by means of principal components. The package implements functions for component visualization, interpretation and stability analysis. For details on the analysis, please see the manuscript:
+The package implements functions for helping in the process of disease patterns analysis by means of principal components. These include component visualization, interpretation and stability analysis. The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. For details on the analysis, please see the manuscript:
 
     Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson. Reproducible analysis of disease space via principal components: a brief tutorial and R package (syndRomics). Under review
-
-
-The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. The **syndRomics** package contain utility functions for aiding in the process of component interpretation, visualization and stability analysis by means of the principal component.
 
 Here you will find the basics of the package. There is more, so we encourage you to explore further.
 
 # Setting up
 
-For this example we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](DOI:10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
+For an example of using the package we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](DOI:10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
 
 The same data have been used in the past by Adam Ferguson team to perform SCI syndromics analysis:
 
@@ -470,32 +465,6 @@ plot(s_per, plot_resample = T, ndim = 1:3, colors=c("orange2", "white","purple")
 
 <img width="50%" height= "50%" src="./vignettes/figure/s plot 22.0-1.png">
 
-The resamples can be plot as follow as well:
-
-**VAF line**
-
-
-```r
-VAF_plot(pca, pca_data, ndim=1:5, resample_ci = per$results)
-```
-
-<img width="30%" height= "30%" src="./vignettes/figure/s plot 22-1.png">
-
-**Bootstrap**
-
-```r
-barmap_loading(pca, pca_data, ndim=1:3, resample_ci = booted_PCA$results)
-```
-
-<img width="50%" height= "50%" src="./vignettes/figure/s plot 23-1.png">
-
-**Permutation**
-
-```r
-barmap_loading(pca, pca_data, ndim=1:3, resample_ci = s_per$results)
-```
-
-<img width="50%" height= "50%" src="./vignettes/figure/s plot 24-1.png">
 
 ## Tuning up the plots
 
