@@ -711,6 +711,7 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
   error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = T)
 
   while (class(error)[1]=='try-error'){
+    x<-apply(x, 2,function(x){base::sample(x, length(x))})
     error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = T)
   }
 
@@ -766,6 +767,9 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
   error<-try(pca_per<-eval(pca$call),silent = T)
 
   while (class(error)[1]=='try-error'){
+    x<-apply(x, 2,function(x){base::sample(x, length(x))})
+    pca$call$data<-quote(x)
+
     error<-try(pca_per<-eval(pca$call),silent = T)
   }
 
