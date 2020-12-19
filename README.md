@@ -1,9 +1,9 @@
 # syndRomics
 R syndRomics package
 
-# Introduction
+    **The package is in development, please open an issue if you find errors or have ideas about improving the package**
 
-**The package is in development, please open an issue if you find errors or have ideas about improving the package**
+# Introduction
 
 The package implements functions for helping in the process of disease patterns analysis by means of principal components. These include component visualization, interpretation and stability analysis. The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. For details on the analysis, please see the manuscript:
 
