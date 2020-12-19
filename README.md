@@ -1,6 +1,8 @@
 # syndRomics
 R syndRomics package
 
+# Introduction
+
 **The package is in development, please open an issue if you find errors or have ideas about improving the package**
 
 The package implements functions for helping in the process of disease patterns analysis by means of principal components. These include component visualization, interpretation and stability analysis. The goal of the analysis is to understand complex disease states or patterns as common factors (syndromes) that can be quantified from measured variables through the use of computational and analytic approaches (Ferguson et al., 2011, Torres-Espin et al., 2020). In particular, principal component analysis (PCA) and related multivariate statistics has been used as primary toolkit for extracting disease patterns. For details on the analysis, please see the manuscript:
@@ -9,7 +11,26 @@ The package implements functions for helping in the process of disease patterns 
 
 Here you will find the basics of the package. There is more, so we encourage you to explore further.
 
-# Setting up
+# Installation
+
+syndRomics package can be installed from GitHub using the following code:
+
+```r
+install.packages('devtools')
+devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@*release")
+```
+
+This will install the latest release. To install previous versions, you can use:
+
+    devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@tagName")
+
+For example:
+
+```r
+devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@0.0.1.9000")
+```
+
+# Use Example
 
 For an example of using the package we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](DOI:10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
 
