@@ -1,6 +1,6 @@
-# MIT License
+MIT License
 
-Copyright (c) 2020 Abel Torres Espin, Austin Chou, John R Huie, Nikos Kyritsis, Adam R Ferguson,  San Francisco VA Health Care System and The Regents of the University of California
+Copyright (c) 2021 The Regents of the University of California
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

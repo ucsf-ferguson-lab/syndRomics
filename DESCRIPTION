@@ -1,7 +1,7 @@
 Package: syndRomics
 Type: Package
 Title: Component loading interpretation and visualization with syndromic plots
-Version: 0.0.1.9000
+Version: 0.0.2.9000
 Author: Abel Torres Espin, Austin Chou
 Maintainer: Abel Torres Espin <atpspin@gmail.com>
 Description: The syndRomics package offers functionalities that aid in the steps for syndromics analysis 
