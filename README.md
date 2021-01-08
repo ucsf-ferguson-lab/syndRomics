@@ -37,7 +37,7 @@ devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@0.0.1.9000")
 
 # Use Example
 
-For an example of using the package we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](DOI:10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
+For an example of using the package we will use a public dataset accessible through the Open Data Commons for Spinal Cord Injury [ODC-SCI:26](http://dx.doi.org/10.7295/W9T72FMZ). The dataset consist on studies of subjects with cervical spinal cord injury and a battery of functional test to assess neurological function after injury. For the example we will be using the data at 6 weeks after injury.
 
 The same data have been used in the past by Adam Ferguson team to perform SCI syndromics analysis:
 
