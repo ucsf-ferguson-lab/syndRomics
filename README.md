@@ -1,5 +1,7 @@
 [![GitHub license](https://img.shields.io/github/license/ucsf-ferguson-lab/syndRomics)](https://github.com/ucsf-ferguson-lab/syndRomics/blob/master/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/ucsf-ferguson-lab/syndRomics)](https://github.com/ucsf-ferguson-lab/syndRomics/issues)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/ucsf-ferguson-lab/syndRomics/graphs/commit-activity)
+[![GitHub release](https://img.shields.io/github/release/ucsf-ferguson-lab/syndRomics)](https://github.com/ucsf-ferguson-lab/syndRomics/releases/)
 
 # syndRomics
 R syndRomics package
