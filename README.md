@@ -21,7 +21,7 @@ Here you will find the basics of the package. There is more, so we encourage you
 syndRomics package can be installed from GitHub using the following code:
 
 ```r
-install.packages('devtools')
+##install.packages('devtools') You will need to install {devtools} if you don't have it in your system
 devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@*release")
 ```
 
