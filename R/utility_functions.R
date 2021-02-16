@@ -647,7 +647,16 @@ boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,p
     pb$tick()
   }
 
-  pca$call$data<-quote(d)
+  pca$call$data<-quote(x)
+
+  if (is.null(pca$call$knots)){
+    pca$call$knots<-quote(Gifi::knotsGifi(x, "D"))
+  }else{
+    type<-pca$call$knots$type
+    n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
+    pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
+  }
+
   error<-try(pca_per<-eval(pca$call), silent = T)
 
   if (class(error)!='try-error'){
@@ -758,11 +767,11 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
   pca$call$data<-quote(x)
 
   if (is.null(pca$call$knots)){
-    pca$call$knots<-quote(knotsGifi(x, "D"))
+    pca$call$knots<-quote(Gifi::knotsGifi(x, "D"))
   }else{
     type<-pca$call$knots$type
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-    pca$call$knots<-quote(knotsGifi(x, type, n))
+    pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
   }
   error<-try(pca_per<-eval(pca$call),silent = T)
 
@@ -881,11 +890,11 @@ permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,.
     pca$call$data<-quote(perm_x)
 
     if (is.null(pca$call$knots)){
-      pca$call$knots<-quote(knotsGifi(perm_x, "D"))
+      pca$call$knots<-quote(Gifi::knotsGifi(perm_x, "D"))
     }else{
       type<-pca$call$knots$type
       n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-      pca$call$knots<-quote(knotsGifi(perm_x, type, n))
+      pca$call$knots<-quote(Gifi::knotsGifi(perm_x, type, n))
     }
 
     error<-try(pca_per<-eval(pca$call),silent = T)
