@@ -31,6 +31,12 @@ This function extracts the standardized loadings from the output of the \emph{pr
 standardized (scaled to unit variance) data or s.loadings=(eigenvector x sqrt(eigenvalues))⁄S where S is the vector of the variables standard deviation.
 In the case of \emph{princals()}, standardized loadings are returned directly in its output and therefore \emph{stand_loadings()} returns those.
 }
+\examples{
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale = TRUE)
+s.loadings<-stand_loadings(pca = pca_mtcars, pca_data = mtcars)
+
+}
 \references{
 Jackson JE, Hearne FT. Relationships Among Coefficients of Vectors Used In Principal Components. Technometrics. 1973 Aug 1;15(3):601–10.
 }

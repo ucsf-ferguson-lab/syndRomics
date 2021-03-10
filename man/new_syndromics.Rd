@@ -6,6 +6,12 @@
 \usage{
 new_syndromics(x)
 }
+\arguments{
+\item{x}{Object of class list to structure as "syndromics" class}
+}
 \description{
-syndromic class constructor
+constructor for the "syndromics" class
+}
+\author{
+Abel Torres Espin
 }

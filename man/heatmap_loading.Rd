@@ -10,7 +10,7 @@ heatmap_loading(
   ndim = 1:10,
   cutoff = 0,
   legend_title = "s. loading",
-  text_values = T,
+  text_values = TRUE,
   star_values = F,
   text_size = 2,
   vars = NULL,
@@ -31,7 +31,7 @@ Value of the loadings threshold (i.e. |loadings| >= cutoff) to plot with stars. 
 
 \item{legend_title}{String. Title of the legend. 's. loading' by default.}
 
-\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default=TRUE}
+\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default= TRUE}
 
 \item{star_values}{Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 \emph{text_values}=FALSE. Default=FALSE}
@@ -52,7 +52,10 @@ Returns a \emph{ggplot2} object.
 Plot a heatmap of the standardized loadings from a PCA solution.
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+heatmap_loading(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 
 }
 \author{

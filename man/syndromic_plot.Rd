@@ -11,8 +11,8 @@ syndromic_plot(
   cutoff,
   VAF,
   arrow_size_multi = 10,
-  repel = T,
-  plot_legend = T,
+  repel = TRUE,
+  plot_legend = TRUE,
   text_size = 9,
   var_order = "abs decreasing",
   colors = c("steelblue1", "white", "firebrick1"),
@@ -35,9 +35,9 @@ the same cutoff will be used for all the PCs. If a vector is passed, each value 
 
 \item{arrow_size_multi}{Numeric. Controls the size of the arrows proportional to the loading. Default=10}
 
-\item{repel}{Logical. Whether to repel the text for preventing text overlap. Default=TRUE}
+\item{repel}{Logical. Whether to repel the text for preventing text overlap. Default= TRUE}
 
-\item{plot_legend}{Logical. Whether to plot the legend or not. Default=TRUE}
+\item{plot_legend}{Logical. Whether to plot the legend or not. Default= TRUE}
 
 \item{text_size}{Numeric. Controls for the size of the text. Default=9}
 
@@ -58,6 +58,9 @@ Extract the syndromic plots from a pca solution or from a table of loadings for 
 specified PCs.
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+syndromic_plot(pca = pca_mtcars, pca_data = mtcars, ndim = 2, cutoff = 0.5)
 
 }

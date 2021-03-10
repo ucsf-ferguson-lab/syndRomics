@@ -12,8 +12,7 @@ permut_pc_test(
   statistic = "VAF",
   conf = 0.95,
   adj.method = "BH",
-  perm.method = "permV",
-  ...
+  perm.method = "permV"
 )
 }
 \arguments{
@@ -80,6 +79,14 @@ This method has resulted in better determination of the significant contribution
 type I error, and therefore has been incorporated in the package as the suggested method for loadings and communalities.
 Following Linting et al., terminology, user can specify the permutation strategy for the loadings as one variable at the time (\emph{permV}, as in Linting et al., 2011)
 or as all the variable together (\emph{permD}, as in Buja & Eyuboglu, 1992; Peres-Neto et al., 2003).
+}
+\examples{
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+pca_mtcars_perm<-permut_pc_test(pca = pca_mtcars, pca_data = mtcars, ndim = 3, P = 500)
+plot(pca_mtcars_perm, plot_resample= TRUE)
+
 }
 \references{
 \enumerate{

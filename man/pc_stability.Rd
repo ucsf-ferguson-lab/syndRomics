@@ -10,7 +10,7 @@ pc_stability(
   ndim = 3,
   B = 1000,
   sim = "ordinary",
-  communalities = T,
+  communalities = TRUE,
   similarity_metric = "all",
   s_cut_off = 0.1,
   ci_type = "bca",
@@ -69,7 +69,7 @@ Returns a list object of class "syndromics".
    \item{\strong{similarity_ci_low and similarity_ci_high}}{A numeric matrix with the lower and upper CI respectively.}
    }
   \item{\strong{B}}{Number of resamples computed.}
-  \item{\strong{communalities}}{If communalities=TRUE, the results are returned here.}
+  \item{\strong{communalities}}{If communalities= TRUE, the results are returned here.}
 }
 }
 \description{
@@ -83,7 +83,11 @@ data complexity and sample size. The user must be careful on setting such number
 of the approximation. However, values that are too high might unnecessarily increase computing time with little gain (REFs).
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+pca_mtcars_stab<-pc_stability(pca = pca_mtcars, pca_data = mtcars, ndim = 3, B = 500)
+plot(pca_mtcars_stab, plot_resample= TRUE)
 
 }
 \references{

@@ -27,6 +27,20 @@ The s index was first suggested by Cattell et al.
   (forming the hyperplane space). Cattell’s suggested an arbitrary ±0.1 cut-off to be considered as salient variables. In practice,
   one might want to alter the threshold depending on the experimental conditions.
 }
+\examples{
+#'data(mtcars)
+pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+
+#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#from two proximal datasets
+pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+
+s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+
+extract_s(s.loadings_1[,1], s.loadings_2[,1], cut_off=0.2)
+
+}
 \references{
 Cattell RB, Balcar KR, Horn JL, Nesselroade JR. Factor Matching Procedures: an Improvement of the s Index; with Tables. Educ Psychol Meas. 1969 Dec;29(4):781–92
 }

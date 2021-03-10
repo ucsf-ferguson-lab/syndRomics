@@ -10,15 +10,15 @@ barmap_commun(
   ndim = 1:5,
   load_list = NULL,
   conf = 0.95,
-  plot_original = T,
+  plot_original = TRUE,
   plot_list_center = F,
-  plot_legend = T,
+  plot_legend = TRUE,
   text_values = F,
   text_size = 2,
   var_order = "increasing",
   vars = NULL,
   colors = c("white", "firebrick1"),
-  gradient_color = T
+  gradient_color = TRUE
 )
 }
 \arguments{
@@ -64,7 +64,10 @@ Returns a \emph{ggplot2} object.
 Plot a Barmap of the communalities from a PCA solution given the first ndim PCs.
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+barmap_commun(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 
 }
 \author{
