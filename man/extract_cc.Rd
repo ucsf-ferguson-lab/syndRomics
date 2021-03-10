@@ -28,6 +28,20 @@ The congurence
   without affecting its interpretation. Here we consider the absolute value of CC (0 to 1).
   The closer the CC is to 1, the more similar the two components are.
 }
+\examples{
+data(mtcars)
+pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+
+#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#from two proximal datasets
+pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+
+s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+
+extract_cc(s.loadings_1[,1], s.loadings_2[,1])
+
+}
 \references{
 \enumerate{
   \item Burt C. The Factorial Study of Temperamental Traits. Br J Stat Psychol. 1948;1(3):178–203.

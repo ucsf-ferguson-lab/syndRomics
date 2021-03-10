@@ -17,8 +17,8 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'the same cutoff will be used for all the PCs. If a vector is passed, each value will be used for the corresponding PC.
 #'@param VAF If \emph{pca} is from \emph{prcomp} or \emph{princals}, VAF argument is not needed. Otherwise, VAF is a String vector with text for the centers of the syndromic plots. The text generally corresponds to the variance accounted for (VAF) for the respective PCs.
 #'@param arrow_size_multi Numeric. Controls the size of the arrows proportional to the loading. Default=10
-#'@param repel Logical. Whether to repel the text for preventing text overlap. Default=TRUE
-#'@param plot_legend Logical. Whether to plot the legend or not. Default=TRUE
+#'@param repel Logical. Whether to repel the text for preventing text overlap. Default= TRUE
+#'@param plot_legend Logical. Whether to plot the legend or not. Default= TRUE
 #'@param text_size Numeric. Controls for the size of the text. Default=9
 #'@param var_order Character. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 #''abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.
@@ -31,7 +31,10 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'@return Returns a list of \emph{ggplot2} objects with one element for each PC plot. Plots can be saved usign ggsave().
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'syndromic_plot(pca = pca_mtcars, pca_data = mtcars, ndim = 2, cutoff = 0.5)
 #'
 #'@export
 #'
@@ -39,7 +42,7 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'@importFrom rlang .data
 #'
 syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_multi=10,
-                         repel=T, plot_legend=T, text_size=9,
+                         repel= TRUE, plot_legend= TRUE, text_size=9,
                          var_order='abs decreasing',colors=c("steelblue1","white","firebrick1"),
                          ...){
 
@@ -51,7 +54,10 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
     VAF<-paste(round(pca$evals/sum(pca$evals)*100,1), '%', sep='')
   }
 
-  ndim<-min(dim(load_df)[2]+1, ndim)
+  if (min(dim(load_df)[2]-1<ndim)){
+    ndim<-min(dim(load_df)[2]-1, ndim)
+    warning(sprintf("The specified ndim is bigger than number of dimensions, using ndim = %s", ndim))
+  }
 
   load_df<-load_df%>%pivot_longer(-.data$Variables,
                                   names_to = "component", values_to = "loading")%>%
@@ -65,7 +71,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
     v<-VAF[i]
     s_plot<-NULL
 
-    try(s_plot<-extract_syndromic_plot(load_df = load_df, pc=pc, cutoff=c, VAF=v, text_size=text_size,
+    try(s_plot<-extract_syndromic_plot(load_df = load_df, pc=pc, cutoff=c, VAF=v, text_size= text_size,
                                        arrow_size_multi = arrow_size_multi, repel = repel,
                                        var_order=var_order, plot_legend = plot_legend,
                                        colors=colors))
@@ -74,7 +80,6 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
   }
   return(s_list)
 }
-
 #'@title Heatmap of standardized loadings
 #'
 #'@description Plot a heatmap of the standardized loadings from a PCA solution.
@@ -90,7 +95,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
 #'@param cutoff Numeric or numeric vector of length \emph{ndim}.
 #'Value of the loadings threshold (i.e. |loadings| >= cutoff) to plot with stars. Default = 0
 #'@param legend_title String. Title of the legend. 's. loading' by default.
-#'@param text_values Logical. Whether to plot the values of the loadings or not. Default=TRUE
+#'@param text_values Logical. Whether to plot the values of the loadings or not. Default= TRUE
 #'@param star_values Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 #'\emph{text_values}=FALSE. Default=FALSE
 #'@param text_size Numeric. Size of the text_values.
@@ -103,7 +108,10 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
 #'@return Returns a \emph{ggplot2} object.
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'heatmap_loading(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 #'
 #'@export
 #'
@@ -111,7 +119,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
 #'@importFrom rlang .data
 #'
 heatmap_loading<-function(pca, pca_data, ndim=1:10, cutoff=0,
-                          legend_title='s. loading', text_values=T, star_values=F,
+                          legend_title='s. loading', text_values= TRUE, star_values=F,
                           text_size=2, vars=NULL, colors=c("steelblue1","white","firebrick1")){
 
   old_scipen<-getOption('scipen')
@@ -207,7 +215,7 @@ heatmap_loading<-function(pca, pca_data, ndim=1:10, cutoff=0,
 #'@param conf Numeric. Confidence level used when \emph{load_list} is provided.
 #'@param plot_list_center Logical. Whether to plot the average loadings obtained from \emph{load_list}.
 #'@param plot_legend Logical. Whether legend should be plotted.
-#'@param text_values Logical. Whether to plot the values of the loadings or not. Default=TRUE
+#'@param text_values Logical. Whether to plot the values of the loadings or not. Default= TRUE
 #'@param star_values Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 #'\emph{text_values}=FALSE. Default=FALSE
 #'@param text_size Numeric. Size of the text_values.
@@ -222,7 +230,10 @@ heatmap_loading<-function(pca, pca_data, ndim=1:10, cutoff=0,
 #'@return Returns a \emph{ggplot2} object.
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'barmap_loading(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 #'
 #'@export
 #'
@@ -230,9 +241,9 @@ heatmap_loading<-function(pca, pca_data, ndim=1:10, cutoff=0,
 #'@importFrom rlang .data
 #'
 barmap_loading<-function(pca, pca_data, ndim=1:5, cutoff=0,resample_ci=NULL,conf=0.95, plot_list_center=F,
-                         plot_legend=T,text_values=F, star_values=F,
-                         text_size=2, plot_cutoff=T, vars=NULL, colors=c("steelblue1","white","firebrick1"),
-                         gradient_color=T){
+                         plot_legend= TRUE,text_values=F, star_values=F,
+                         text_size=2, plot_cutoff= TRUE, vars=NULL, colors=c("steelblue1","white","firebrick1"),
+                         gradient_color= TRUE){
 
   # resample_ci<-b$boot_samples
   # pca_data<-mtcars
@@ -242,11 +253,11 @@ barmap_loading<-function(pca, pca_data, ndim=1:5, cutoff=0,resample_ci=NULL,conf
   # plot_title='Standardized loadings'
   # legend_title='s. loading'
   # text_values=F
-  # star_values=T
+  # star_values= TRUE
   # text_size=2
-  # plot_cutoff=T
+  # plot_cutoff= TRUE
   # vars=NULL
-  # plot_legend=T
+  # plot_legend= TRUE
 
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
@@ -386,17 +397,20 @@ barmap_loading<-function(pca, pca_data, ndim=1:5, cutoff=0,resample_ci=NULL,conf
 #'@return Returns a \emph{ggplot2} object.
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'barmap_commun(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 #'
 #'@export
 #'
 #'@import ggplot2 dplyr tidyr ggnewscale
 #'@importFrom rlang .data
 #'
-barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_original=T,plot_list_center=F,
-                        plot_legend=T,text_values=F,
+barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_original= TRUE,plot_list_center=F,
+                        plot_legend= TRUE,text_values=F,
                         text_size=2, var_order='increasing',vars=NULL,
-                        colors=c("white","firebrick1"), gradient_color=T){
+                        colors=c("white","firebrick1"), gradient_color= TRUE){
 
   # pca=b_test$pca
   # pca_data=b_test$pca_data
@@ -412,7 +426,7 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
   }
 
   if (is.null(load_list)){
-    plot_original==T
+    plot_original== TRUE
   }
 
   if (length(ndim)>1){
@@ -475,8 +489,8 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
     array_b<-do.call(rbind, b_communalities)
 
     mean_communalities<-apply(array_b, 2, mean)
-    ci_low_c<-apply(array_b,2,function(x) quantile(x, (1-conf)/2, na.rm = T))
-    ci_high_c<-apply(array_b,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = T))
+    ci_low_c<-apply(array_b,2,function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
+    ci_high_c<-apply(array_b,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
 
     results_c<-cbind(commun_df,mean_communalities, ci_low_c,ci_high_c)
     com_df<-as.data.frame(results_c)
@@ -529,7 +543,10 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
 #'@return Returns a \emph{ggplot2} object.
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'VAF_plot(pca = pca_mtcars, pca_data = mtcars, ndim = 1:7)
 #'
 #'@export
 #'
@@ -567,7 +584,7 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
         geom_point(data=resample_ci, aes(x=.data$component, y=.data$mean*100, color="Permuted"),
                    inherit.aes = F)+
         geom_line(data=resample_ci, aes(x=.data$component, y=.data$mean*100,group=.data$name,color="Permuted"),
-                  inherit.aes = F, show.legend = T)+
+                  inherit.aes = F, show.legend = TRUE)+
         geom_errorbar(data=resample_ci,
                       aes(x=.data$component, y=.data$mean*100, ymin=.data$ci_low*100,ymax=.data$ci_high*100,color="Permuted"),
                       inherit.aes = F,width=0.5)+
@@ -653,7 +670,7 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
 #'    \item{\strong{similarity_ci_low and similarity_ci_high}}{A numeric matrix with the lower and upper CI respectively.}
 #'    }
 #'   \item{\strong{B}}{Number of resamples computed.}
-#'   \item{\strong{communalities}}{If communalities=TRUE, the results are returned here.}
+#'   \item{\strong{communalities}}{If communalities= TRUE, the results are returned here.}
 #'}
 #'
 #'@details The number of bootstrap samples is set to 1000 by default, as it has been shown to be a robust number in most conditions of
@@ -663,7 +680,11 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
 #'@references Efron B. Better Bootstrap Confidence Intervals. J Am Stat Assoc. 1987 Mar 1;82(397):171–85.
 #'
 #'@examples
-#'pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'pca_mtcars_stab<-pc_stability(pca = pca_mtcars, pca_data = mtcars, ndim = 3, B = 500)
+#'plot(pca_mtcars_stab, plot_resample= TRUE)
 #'
 #'@export
 #'
@@ -671,20 +692,20 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
 #'@importFrom rlang .data
 #'@importFrom stats na.omit
 #'
-pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communalities=T,
+pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communalities= TRUE,
                        similarity_metric='all', s_cut_off=0.1,
                        ci_type='bca', conf=0.95,...){
 
-  # pca<-prcomp(mtcars[1:10,], center = T, scale. = T)
-  # pca_data<-mtcars[1:10,]
+  # pca<-pca
+  # pca_data<-mtcars
   # ndim=3
-  # B=20
-  # sim='ordinary'
+  # B=200
+  # sim='balanced'
   # ci_type='bca'
   # conf=0.95
-  # test_similarity=T
+  # test_similarity= TRUE
   # similarity_metric='all'
-  # s_cut_off=0.4
+  # s_cut_off=0.1
 
   results_list<-list()
   results_list[["method"]]<-'bootstrap'
@@ -696,7 +717,7 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 
   similarity_metric<-match.arg(similarity_metric,
                                c("all","cc_index", "r_correlation","rmse",
-                                 "s_index","none"), several.ok = T)
+                                 "s_index","none"), several.ok = TRUE)
 
   nvars<-dim(pca_data)[2]
   var_names<-colnames(pca_data)
@@ -711,8 +732,8 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   if(class(pca)[1]=='prcomp'){
     center=F
     .scale=F
-    if (is.numeric(pca$center)) center=T
-    if (is.numeric(pca$scale)) .scale=T
+    if (is.numeric(pca$center)) center= TRUE
+    if (is.numeric(pca$scale)) .scale= TRUE
   }
 
   b_pca<-boot::boot(data = pca_data, pca=pca, statistic = boot_pca_sample, R=B,
@@ -810,9 +831,9 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     similarity_res<-do.call(rbind, similarity_res)
 
     ci_sim_low<-similarity_res%>%group_by(.data$PC)%>%
-      summarise_all(.funs=function(x) quantile(x, (1-conf)/2, na.rm = T))
+      summarise_all(.funs=function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
     ci_sim_high<-similarity_res%>%group_by(.data$PC)%>%
-      summarise_all(.funs=function(x) quantile(x, 1-(1-conf)/2, na.rm = T))
+      summarise_all(.funs=function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
     sim_mean<-similarity_res%>%group_by(.data$PC)%>%
       summarise_all(mean)
 
@@ -839,8 +860,8 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     array_b<-do.call(rbind, b_communalities)
 
     mean_communalities<-apply(array_b, 2, mean)
-    ci_low_c<-apply(array_b,2,function(x) quantile(x, (1-conf)/2, na.rm = T))
-    ci_high_c<-apply(array_b,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = T))
+    ci_low_c<-apply(array_b,2,function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
+    ci_high_c<-apply(array_b,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
 
     results_c<-cbind(original_communalities,mean_communalities, ci_low_c,ci_high_c)
     colnames(results_c)<-c('Original_communalities', 'mean','ci_low','ci_high')
@@ -924,6 +945,12 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'  \item Linting M, van Os BJ, Meulman JJ. Statistical Significance of the Contribution of Variables to the PCA solution: An Alternative Permutation Strategy. Psychometrika. 2011 Jul 1;76(3):440–60
 #'}
 #'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+#'
+#'pca_mtcars_perm<-permut_pc_test(pca = pca_mtcars, pca_data = mtcars, ndim = 3, P = 500)
+#'plot(pca_mtcars_perm, plot_resample= TRUE)
 #'
 #'@export
 #'
@@ -932,7 +959,7 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'@importFrom stats p.adjust
 #'
 permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.95,
-                         adj.method='BH', perm.method='permV',...){
+                         adj.method='BH', perm.method='permV'){
 
   # P=10
   # ndim=5
@@ -983,8 +1010,8 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
   if(class(pca)[1]=='prcomp'){
     center=F
     .scale=F
-    if (is.numeric(pca$center)) center=T
-    if (is.numeric(pca$scale)) .scale=T
+    if (is.numeric(pca$center)) center= TRUE
+    if (is.numeric(pca$scale)) .scale= TRUE
   }
 
   if (perm.method=='permD'){
@@ -1016,8 +1043,8 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
     mean_VAF<-colMeans(df_per)
 
-    ci_low<-apply(df_per,2,function(x) quantile(x, (1-conf)/2, na.rm = T))
-    ci_high<-apply(df_per,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = T))
+    ci_low<-apply(df_per,2,function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
+    ci_high<-apply(df_per,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
 
     pvalue<-sapply(1:ndim, function(x){
       (sum(df_per[,x]>original_VAF[x])+1)/(length(per_list)+1)#as in Buja & Eyuboglu, 1992;
@@ -1056,8 +1083,8 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
     results<-suppressMessages(per_df%>%left_join(original_loadings_long, by = c("Variables","component"))%>%
       group_by(.data$Variables, .data$component)%>%
       dplyr::summarise(original=mean(.data$original_loading),
-                       mean=mean(.data$loading), ci_low=quantile(.data$loading, (1-conf)/2, na.rm = T),
-                ci_high=quantile(.data$loading, 1-(1-conf)/2, na.rm = T),
+                       mean=mean(.data$loading), ci_low=quantile(.data$loading, (1-conf)/2, na.rm = TRUE),
+                ci_high=quantile(.data$loading, 1-(1-conf)/2, na.rm = TRUE),
                 pvalue=(sum(abs(.data$loading)>abs(.data$original_loading))+1)/(length(per_list)+1))
       )
     if(adj.method!='none'){
@@ -1088,8 +1115,8 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
       mutate(communality=sum(.data$loading^2))%>%
       group_by(.data$Variables)%>%
       dplyr::summarise(original=mean(.data$original_communality),mean=mean(.data$communality),
-                       ci_low=quantile(.data$communality, (1-conf)/2, na.rm = T),
-                       ci_high=quantile(.data$communality, 1-(1-conf)/2, na.rm = T),
+                       ci_low=quantile(.data$communality, (1-conf)/2, na.rm = TRUE),
+                       ci_high=quantile(.data$communality, 1-(1-conf)/2, na.rm = TRUE),
                        pvalue=(sum(abs(.data$communality)>abs(.data$original_communality))+1)/(length(per_list)+1))
     )
 
@@ -1109,17 +1136,17 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
 #'
 # pc_stability2<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',
-#                         test_similarity=T, similarity_metric='all', s_cut_off=0.1,
-#                         ci_type='bca', conf=0.95,barmap_plot=T,inParallel=F,...){
+#                         test_similarity= TRUE, similarity_metric='all', s_cut_off=0.1,
+#                         ci_type='bca', conf=0.95,barmap_plot= TRUE,inParallel=F,...){
 #
-#   # pca<-prcomp(mtcars[1:10,], center = T, scale. = T)
+#   # pca<-prcomp(mtcars[1:10,], center = TRUE, scale. = TRUE)
 #   # pca_data<-mtcars[1:10,]
 #   # ndim=3
 #   # B=200
 #   # sim='ordinary'
 #   # ci_type='bca'
 #   # conf=0.95
-#   # test_similarity=T
+#   # test_similarity= TRUE
 #   # similarity_metric='all'
 #   # s_cut_off=0.4
 #
@@ -1225,9 +1252,9 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 #     similarity_res<-do.call(rbind, similarity_res)
 #
 #     ci_sim_low<-similarity_res%>%group_by(.data$PC)%>%
-#       summarise_all(.funs=function(x) quantile(x, (1-conf)/2, na.rm = T))
+#       summarise_all(.funs=function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
 #     ci_sim_high<-similarity_res%>%group_by(.data$PC)%>%
-#       summarise_all(.funs=function(x) quantile(x, 1-(1-conf)/2, na.rm = T))
+#       summarise_all(.funs=function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
 #     sim_mean<-similarity_res%>%group_by(.data$PC)%>%
 #       summarise_all(mean)
 #

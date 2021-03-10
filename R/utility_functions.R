@@ -1,5 +1,10 @@
 #'@title syndromic class constructor
 #'
+#'@param x Object of class list to structure as "syndromics" class
+#'
+#'@description constructor for the "syndromics" class
+#'@author Abel Torres Espin
+#'
 new_syndromics<-function(x){
   stopifnot(is.list(x))
   structure(x, class="syndromics")
@@ -28,6 +33,11 @@ new_syndromics<-function(x){
 #' standardized (scaled to unit variance) data or s.loadings=(eigenvector x sqrt(eigenvalues))⁄S where S is the vector of the variables standard deviation.
 #' In the case of \emph{princals()}, standardized loadings are returned directly in its output and therefore \emph{stand_loadings()} returns those.
 #' @return A data.frame with the standardized loadings in the form of variables as rows and components as columns.
+#'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars<-prcomp(mtcars, center = TRUE, scale = TRUE)
+#'s.loadings<-stand_loadings(pca = pca_mtcars, pca_data = mtcars)
 #'
 #'@export
 #'
@@ -203,13 +213,13 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
                   y=c(2.8*sin(angle1)-1,2.8*sin(angle2)-1,2.8*sin(angle3)+1))
 
   s_plot<-ggplot2::ggplot(p,aes(color=.data$loading, label=.data$Variables, x=.data$x, y=.data$y, xend=.data$xend, yend=.data$yend))+
-    geom_polygon(data=pol,aes(.data$x,.data$y),inherit.aes = F, fill='grey')+
+    geom_polygon(data=pol,aes(.data$x,.data$y),inherit.aes = FALSE, fill='grey')+
     ggplot2::scale_color_gradient2(name = "Loading",
                                    high = colors[3], mid = colors[2], low = colors[1],
                                    midpoint=0,na.value = 'transparent') +
     ggplot2::geom_segment(
       arrow = arrow(type='closed', length = unit(0.3, 'cm'), angle = 25),
-      size=abs(p$arrow_weight)*arrow_size_multi, show.legend = F,
+      size=abs(p$arrow_weight)*arrow_size_multi, show.legend = FALSE,
       linejoin = 'mitre')+
     ggplot2::ylab(NULL)+
     ggplot2::xlab(NULL)+
@@ -231,15 +241,15 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
   if (plot_legend){
     s_plot<-s_plot+ggplot2::geom_segment(data=legend_df, aes(x=.data$x, y=.data$y, xend=.data$xend,
                                                              yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
-                                         inherit.aes = F, show.legend = F)+
+                                         inherit.aes = FALSE, show.legend = FALSE)+
       ggplot2::geom_segment(aes(x=max(legend_df$x), y=-11, xend=max(legend_df$x)+0.1,
                                 yend=-11),color=colors[3],arrow = arrow(type='closed',
                                                                         length = unit(0.1, 'cm'), angle = 25),
-                            size=6, show.legend = F,linejoin = 'mitre')+
+                            size=6, show.legend = FALSE,linejoin = 'mitre')+
       ggplot2::geom_segment(aes(x=min(legend_df$x), y=-11, xend=min(legend_df$x)-0.1,
                                 yend=-11),color=colors[1],arrow = arrow(type='closed',
                                                                         length = unit(0.1, 'cm'), angle = 25),
-                            size=6, show.legend = F,linejoin = 'mitre')+
+                            size=6, show.legend = FALSE,linejoin = 'mitre')+
       ggplot2::annotate(geom='text', x=-4.1, y=-11, label="-1", size=text_size)+
       ggplot2::annotate(geom='text', x=4.1, y=-11, label="1", size=text_size)
   }
@@ -249,7 +259,7 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
   #     ggnewscale::new_scale_color() +
   #     ggplot2::geom_segment(data=arbitrary_df,aes(color=.data$arrow_weight),
   #                           arrow = arrow(type='closed', length = unit(0.3, 'cm'), angle = 25),
-  #                           size=abs(p$arrow_weight)*arrow_size_multi, show.legend = F,
+  #                           size=abs(p$arrow_weight)*arrow_size_multi, show.legend = FALSE,
   #                           linejoin = 'mitre')
   #     # scale_color_gradient(low='white', high=dif_var_colors,limits=c(0,1), na.value =  "transparent")
   #     # scale_color_manual(values = dif_var_colors)
@@ -331,6 +341,19 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
 #'   \item Cattell RB, Balcar KR, Horn JL, Nesselroade JR. Factor Matching Procedures: an Improvement of the s Index; with Tables. Educ Psychol Meas. 1969 Dec;29(4):781–92
 #' }
 #'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+#'
+#'#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#'#from two proximal datasets
+#'pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+#'
+#'s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+#'s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+#'
+#'component_similarity(load.list = list(s.loadings_1, s.loadings_2))
+#'
 #'@export
 #'
 #'@importFrom utils combn
@@ -341,7 +364,7 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
 
   similarity_metric<-match.arg(similarity_metric,
                                c("all","cc_index", "r_correlation","rmse",
-                                 "s_index"), several.ok = T)
+                                 "s_index"), several.ok = TRUE)
 
   compar<-t(combn(1:length(load.list),m = 2))
   results<-list()
@@ -353,9 +376,17 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
     similarity_metric<-c(similarity_metric,"s_HP")
   }
 
+  minimal_ncol<-min(unlist(lapply(load.list, ncol)))
+  if (minimal_ncol<ndim){
+    ndim<-minimal_ncol
+    warning(sprintf("Some or all loading matrix in load.list have less columns than ndim. The ndim
+            used is %s", ndim))
+  }
+
   results<-lapply(1:dim(compar)[1], function(l){
     lname<-compar[l,]
     temp1_name<-lname[1]
+
     temp1<-load.list[[temp1_name]][,1:ndim]
     temp1<-as.matrix(apply(temp1, 2, as.numeric))
 
@@ -363,10 +394,11 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
     temp2<-load.list[[temp2_name]][,1:ndim]
     temp2<-as.matrix(apply(temp2, 2, as.numeric))
 
-    if (!identical(dim(temp1), dim(temp2))){
-      stop(sprintf("Error: loading matrix %s and %s have different shape",
-                   temp1_name,temp2_name))
-    }
+    # if (!identical(dim(temp1), dim(temp2))){
+    #   stop(sprintf("Error: loading matrix %s and %s have different shape. Make sure
+    #                they contain the same number of dimensions to test (ndim)",
+    #                temp1_name,temp2_name))
+    # }
 
     rmse<-vector()
     cc_index<-vector()
@@ -440,6 +472,19 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
 #'   \item Tucker, L. R. A method for synthesis of factor analysis studies. Personnel Research Section Report No.984. Washington D.C.: Department of the Army.; 1951.
 #' }
 #'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+#'
+#'#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#'#from two proximal datasets
+#'pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+#'
+#'s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+#'s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+#'
+#'extract_cc(s.loadings_1[,1], s.loadings_2[,1])
+#'
 #'@export
 #'
 extract_cc<-function(vector1, vector2){
@@ -468,6 +513,19 @@ extract_cc<-function(vector1, vector2){
 #'@return Returns the Cattell's S-statistic between vector1 and vector2 at cut_off.
 #'
 #'@references Cattell RB, Balcar KR, Horn JL, Nesselroade JR. Factor Matching Procedures: an Improvement of the s Index; with Tables. Educ Psychol Meas. 1969 Dec;29(4):781–92
+#'
+#'@examples
+#'#'data(mtcars)
+#'pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+#'
+#'#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#'#from two proximal datasets
+#'pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+#'
+#'s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+#'s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+#'
+#'extract_s(s.loadings_1[,1], s.loadings_2[,1], cut_off=0.2)
 #'
 #'@export
 #'
@@ -498,7 +556,7 @@ extract_s<-function(vector1,vector2, cut_off=0.1){
 
   s<-(c11+c33-c13-c31)/(c11+c33+c13+c31+0.5*(c12+c21+c23+c32))
 
-  return(list(s, h.p))
+  return(list("s_index"=s, "h.p"=h.p))
 }
 
 #'@title Extracts root mean square error (RMSE)
@@ -520,6 +578,19 @@ extract_s<-function(vector1,vector2, cut_off=0.1){
 #'
 #'@references Guadagnoli E, Velicer W. A Comparison of Pattern Matching Indices. Multivar Behav Res. 1991 Apr;26(2):323–43
 #'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+#'
+#'#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#'#from two proximal datasets
+#'pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+#'
+#'s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+#'s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+#'
+#'extract_rmse(s.loadings_1[,1], s.loadings_2[,1])
+#'
 #'@export
 #'
 extract_rmse<-function(vector1, vector2){
@@ -527,6 +598,39 @@ extract_rmse<-function(vector1, vector2){
 }
 
 #'@title Generic Bootstrapping PCA sample
+#'
+#'@description This function is an S3 generic function for bootstrapping PCA samples. Current
+#'implemented methods are for objects of class "prcomp" returned by the \emph{prcomp()} function, and
+#'objects of class "princals" returned by the \emph{Gifi::princals()} function.
+#'See \emph{?boot_pca_sample.prcomp} or \emph{?boot_pca_sample.princals} for more details.
+#'
+#'@author Abel Torres Espin
+#'
+#'@param data The data argument passed from the \emph{boot} function
+#'@param indices The indices of the rows for the bootstrapped sample passed from the \emph{boot} function
+#'@param pca Object of class \emph{prcomp} or \emph{princals}.
+#'@param ... Further arguments pass to \emph{?boot_pca_sample.prcomp} or \emph{?boot_pca_sample.princals}
+#'
+#'@details A major problem of performing bootstrapping procedures in PCA is what is known as sign reflection:
+#' the change of the sign (positive/negative) on the component loadings in a PC given slight variations in the data. In addition,
+#'component/factor translocation can occur, meaning that the position of one component can change in a particular
+#'PCA solution, especially when two components have similar VAF. Another problem on performing PCAs with variations
+#'in the data is the possibility of rotation indeterminacy when the PCA solution of a resampled data presents with a
+#'different rotation of the original PCA solution. These issues generate artificially biased bootstrapped distributions,
+#'reducing the performance of the procedure. We have implemented a step of procrustes rotation between the original
+#'loadings (target) and the bootstrapped sample, which has previously been demonstrated to be a reasonable method to deal with such
+#'issues. The procrustes rotation is obtained by the \emph{pracma::procrustes()} function.
+#'
+#'@return A matrix with one sample bootstrapped standardized loadings. This will be returned to the
+#'\emph{boot} function when \emph{pc_stability} function is called.
+#'
+#'@references
+#'\enumerate{
+#'  \item Linting M, Meulman JJ, Groenen PJF, van der Kooij AJ. Stability of nonlinear principal components analysis: An empirical study using the balanced bootstrap. Psychol Methods. 2007;12(3):359–79.
+#'  \item	Babamoradi H, van den Berg F, Rinnan Å. Bootstrap based confidence limits in principal component analysis — A case study. Chemom Intell Lab Syst. 2013 Jan 15;120:97–105.
+#'  \item	Timmerman ME, Kiers HAL, Smilde AK. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. Br J Math Stat Psychol. 2007 Nov;60(Pt 2):295–314
+#'}
+#'
 #'@export
 boot_pca_sample<-function(data, indices, pca,...){
   UseMethod("boot_pca_sample", pca)
@@ -548,6 +652,7 @@ boot_pca_sample<-function(data, indices, pca,...){
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progess::progress_bar$new()}. Not required.
 #'@param center Logical. Whether pca is conducted on the centered data.
 #'@param .scale Logical. Whether pca is conducted on the scaled data.
+#'@param ... Not in use
 #'
 #'@details A major problem of performing bootstrapping procedures in PCA is what is known as sign reflection:
 #' the change of the sign (positive/negative) on the component loadings in a PC given slight variations in the data. In addition,
@@ -582,7 +687,7 @@ boot_pca_sample.prcomp<-function(data, indices, pca, original_loadings,ndim,pb=N
     pb$tick()
   }
 
-  error<-try(pca_per<-prcomp(d,scale. = .scale,center = center),silent = T)
+  error<-try(pca_per<-prcomp(d,scale. = .scale,center = center),silent = TRUE)
 
   if (class(error)!='try-error'){
     load<-stand_loadings(pca_per, d)
@@ -613,6 +718,7 @@ boot_pca_sample.prcomp<-function(data, indices, pca, original_loadings,ndim,pb=N
 #'@param original_loadings The data.frame containing the standardized loadings of the original sample.
 #'@param ndim Numeric. Number of PCs to save (1 to ndim).
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progess::progress_bar$new()}. Not required.
+#'@param ... Not in use
 #'
 #'@details A major problem of performing bootstrapping procedures in PCA is what is known as sign reflection:
 #' the change of the sign (positive/negative) on the component loadings in a PC given slight variations in the data. In addition,
@@ -641,23 +747,27 @@ boot_pca_sample.prcomp<-function(data, indices, pca, original_loadings,ndim,pb=N
 #'@export
 #'
 boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,pb=NULL,...){
-  d<-data[indices,]
+
+  # data<-pca_data
+  # indices<-sample(1:nrow(data), size = nrow(data),replace = F)
+
+  d<-as.data.frame(data[indices,])
 
   if(!is.null(pb)){
     pb$tick()
   }
 
-  pca$call$data<-quote(x)
+  pca$call$data<-quote(d)
 
   if (is.null(pca$call$knots)){
-    pca$call$knots<-quote(Gifi::knotsGifi(x, "D"))
+    pca$call$knots<-quote(Gifi::knotsGifi(d, "D"))
   }else{
     type<-pca$call$knots$type
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-    pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
+    pca$call$knots<-quote(Gifi::knotsGifi(d, type, n))
   }
 
-  error<-try(pca_per<-eval(pca$call), silent = T)
+  error<-try(pca_per<-eval(pca$call), silent = TRUE)
 
   if (class(error)!='try-error'){
     load<-stand_loadings(pca_per, d)
@@ -675,11 +785,85 @@ boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,p
 }
 
 #'@title Generic for permutating PCA using permD method
+#'
+#'@description Generic S3 function for permut_pca methods using the permD permutation
+#'method. Current implemented methods are for objects of class "prcomp" returned by the \emph{prcomp()} function, and
+#'objects of class "princals" returned by the \emph{Gifi::princals()} function.
+#'See \emph{?permut_pca_D.prcomp} or \emph{?permut_pca_D.princals} for more details.
+#'
+#'@author Abel Torres Espin
+#'
+#'@param pca Object of class \emph{prcomp} or \emph{princals}.
+#'@param ... Further arguments pass to \emph{?permut_pca_D.prcomp} or \emph{?permut_pca_D.princals}
+#'
+#'@details Nonparametric permutation for hypothesis testing of the VAF of component, the loadings or communalities
+#'have been studied (see refs). The hypothesis test is defined as:
+#'H(null): PC metric (either VAF or loading) is indistinguishable from a random generation
+#'H(alternative): PC metric (either VAF or loading) is different from random
+#'The null distribution is generated by permuting the values of each variable several times (P)
+#'and re-running the PCA on each permuted sample. Confidence intervals of the permuted distribution (null distribution) are
+#'calculated using the percentile method. The p values are calculated as p = ((q+1))⁄((P+1)), where q is the number of times
+#'the chosen metric is higher in the permuted distribution than in the original PCA solution and P is the number of permutations.
+#'The user should note that the lowest p value that can be calculated is dependent on P. As an example, if P is set to a value of 10 (a relatively low value),
+#'the smallest p value that can be detected is 0.09, considering q=0. Accordingly, P should be set high enough to reach the desired floor p value.
+#'By default, we have set the number of permutations to 1000 (smallest p value approximately equal to 0.001 as a result) as this has been shown to be
+#'high enough for approximating the null distribution in most cases.
+#'
+#'Permutation test of the loadings as in (Buja & Eyuboglu, 1992; Peres-Neto et al., 2003) that can serve to determine
+#'the loading threshold, where the variables are permuted simultaneously and concomitantly. Linting et al., designed and tested an strategy
+#'where only one variable is permuted at the time, showing great results in determining the contribution of variables using communalities (Linting et al., 2011).
+#'This method has resulted in better determination of the significant contribution of variables on the PCA solution with higher statistical power and proper
+#'type I error, and therefore has been incorporated in the package as the suggested method for loadings and communalities.
+#'Following Linting et al., terminology, user can specify the permutation strategy for the loadings as one variable at the time (\emph{permV}, as in Linting et al., 2011)
+#'or as all the variable together (\emph{permD}, as in Buja & Eyuboglu, 1992; Peres-Neto et al., 2003).
+#'
+#'@references
+#'\enumerate{
+#'  \item Buja A, Eyuboglu N. Remarks on Parallel Analysis. Multivar Behav Res. 1992 Oct 1;27(4):509–40
+#'  \item Linting M, van Os BJ, Meulman JJ. Statistical Significance of the Contribution of Variables to the PCA solution: An Alternative Permutation Strategy. Psychometrika. 2011 Jul 1;76(3):440–60
+#'}
 permut_pca_D<-function(pca, ...){
   UseMethod("permut_pca_D")
 }
 
 #'@title Generic for permuting PCA using permV method
+#'
+#'@description Generic S3 function for permut_pca methods using the permV permutation
+#'method. Current implemented methods are for objects of class "prcomp" returned by the \emph{prcomp()} function, and
+#'objects of class "princals" returned by the \emph{Gifi::princals()} function.
+#'See \emph{?permut_pca_V.prcomp} or \emph{?permut_pca_V.princals} for more details.
+#'
+#'@author Abel Torres Espin
+#'
+#'@param pca Object of class \emph{prcomp} or \emph{princals}.
+#'@param ... Further arguments pass to \emph{?permut_pca_V.prcomp} or \emph{?permut_pca_V.princals}
+#'
+#'@details Nonparametric permutation for hypothesis testing of the VAF of component, the loadings or communalities
+#'have been studied (see refs). The hypothesis test is defined as:
+#'H(null): PC metric (either VAF or loading) is indistinguishable from a random generation
+#'H(alternative): PC metric (either VAF or loading) is different from random
+#'The null distribution is generated by permuting the values of each variable several times (P)
+#'and re-running the PCA on each permuted sample. Confidence intervals of the permuted distribution (null distribution) are
+#'calculated using the percentile method. The p values are calculated as p = ((q+1))⁄((P+1)), where q is the number of times
+#'the chosen metric is higher in the permuted distribution than in the original PCA solution and P is the number of permutations.
+#'The user should note that the lowest p value that can be calculated is dependent on P. As an example, if P is set to a value of 10 (a relatively low value),
+#'the smallest p value that can be detected is 0.09, considering q=0. Accordingly, P should be set high enough to reach the desired floor p value.
+#'By default, we have set the number of permutations to 1000 (smallest p value approximately equal to 0.001 as a result) as this has been shown to be
+#'high enough for approximating the null distribution in most cases.
+#'
+#'Permutation test of the loadings as in (Buja & Eyuboglu, 1992; Peres-Neto et al., 2003) that can serve to determine
+#'the loading threshold, where the variables are permuted simultaneously and concomitantly. Linting et al., designed and tested an strategy
+#'where only one variable is permuted at the time, showing great results in determining the contribution of variables using communalities (Linting et al., 2011).
+#'This method has resulted in better determination of the significant contribution of variables on the PCA solution with higher statistical power and proper
+#'type I error, and therefore has been incorporated in the package as the suggested method for loadings and communalities.
+#'Following Linting et al., terminology, user can specify the permutation strategy for the loadings as one variable at the time (\emph{permV}, as in Linting et al., 2011)
+#'or as all the variable together (\emph{permD}, as in Buja & Eyuboglu, 1992; Peres-Neto et al., 2003).
+#'
+#'@references
+#'\enumerate{
+#'  \item Buja A, Eyuboglu N. Remarks on Parallel Analysis. Multivar Behav Res. 1992 Oct 1;27(4):509–40
+#'  \item Linting M, van Os BJ, Meulman JJ. Statistical Significance of the Contribution of Variables to the PCA solution: An Alternative Permutation Strategy. Psychometrika. 2011 Jul 1;76(3):440–60
+#'}
 permut_pca_V<-function(pca, ...){
   UseMethod("permut_pca_V")
 }
@@ -698,6 +882,7 @@ permut_pca_V<-function(pca, ...){
 #'@param output Character. Determines the output to compute. Possible values are
 #'Variance accounted for ("VAF"), the standardized loadings ("s.loadings") or communalities.
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progress::progress_bar$new()}. Not required.
+#'@param ... Not in use
 #'
 #'@details This is a helper function internally called by
 #'\emph{permut_pca_test()} to produce a permutation sample of the given output of
@@ -717,11 +902,11 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
   }
   x<-apply(x, 2,function(x){base::sample(x, length(x))})
 
-  error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = T)
+  error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = TRUE)
 
   while (class(error)[1]=='try-error'){
     x<-apply(x, 2,function(x){base::sample(x, length(x))})
-    error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = T)
+    error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = TRUE)
   }
 
   if (output=='s.loadings'|| output=='commun'){
@@ -744,6 +929,7 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
 #'@param output Character. Determines the output to compute. Possible values are
 #'Variance accounted for ("VAF"), the standardized loadings ("s.loadings") or communalities.
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progress::progress_bar$new()}. Not required.
+#'@param ... Not in use
 #'
 #'@details This is a helper function internally called by
 #'\emph{permut_pca_test()} to produce a permutation sample of the given output of
@@ -773,13 +959,13 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
     pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
   }
-  error<-try(pca_per<-eval(pca$call),silent = T)
+  error<-try(pca_per<-eval(pca$call),silent = TRUE)
 
   while (class(error)[1]=='try-error'){
     x<-apply(x, 2,function(x){base::sample(x, length(x))})
     pca$call$data<-quote(x)
 
-    error<-try(pca_per<-eval(pca$call),silent = T)
+    error<-try(pca_per<-eval(pca$call),silent = TRUE)
   }
 
   if (output=='s.loadings'|| output=='commun'){
@@ -799,11 +985,14 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
 #'
 #'@param pca Object of class \emph{prcomp}
 #'@param x Data passed to the \emph{prcomp}.
-#'@param center Logical. Whether pca is conducted on the centered data.
-#'@param .scale Logical. Whether pca is conducted on the scaled data.
 #'@param output Character. Determines the output to compute. Possible values are
 #'Variance accounted for ("VAF"), the standardized loadings ("s.loadings") or communalities.
+#'@param center Logical. Whether pca is conducted on the centered data.
+#'@param .scale Logical. Whether pca is conducted on the scaled data.
+#'@param original_loadings The data.frame containing the standardized loadings of the original sample.
+#'@param ndim Numeric. Number of PCs to save (1 to ndim).
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progress::progress_bar$new()}. Not required.
+#'@param ... Not in use
 #'
 #'@details This is a helper function internally called by
 #'\emph{permut_pca_test()} to produce a permutation sample of the given output of
@@ -827,7 +1016,7 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
     perm_x<-x
     perm_x[,i]<-sample(x[,i], length(x[,i]))
 
-    error<-try(pca_per<-prcomp(perm_x,scale. = .scale,center = center),silent = T)
+    error<-try(pca_per<-prcomp(perm_x,scale. = .scale,center = center),silent = TRUE)
 
     if (class(error)[1]!='try-error'){
 
@@ -864,7 +1053,10 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
 #'@param x Data passed to the \emph{princals}.
 #'@param output Character. Determines the output to compute. Possible values are
 #'Variance accounted for ("VAF"), the standardized loadings ("s.loadings") or communalities.
+#'@param original_loadings The data.frame containing the standardized loadings of the original sample.
+#'@param ndim Numeric. Number of PCs to save (1 to ndim).
 #'@param pb Object of class "Progress_bar" "R6" generated by \emph{progress::progress_bar$new()}. Not required.
+#'@param ... Not in use
 #'
 #'@details This is a helper function internally called by
 #'\emph{permut_pca_test()} to produce a permutation sample of the given output of
@@ -897,7 +1089,7 @@ permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,.
       pca$call$knots<-quote(Gifi::knotsGifi(perm_x, type, n))
     }
 
-    error<-try(pca_per<-eval(pca$call),silent = T)
+    error<-try(pca_per<-eval(pca$call),silent = TRUE)
 
 
     if (class(error)[1]!='try-error'){
@@ -922,8 +1114,30 @@ permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,.
 }
 
 #'@title Method to plot results from pc_stability or permut_pca_test
-#'@export
 #'
+#'@description S3 method of object class "syndromics" returned by
+#'\emph{pc_stability()} or \emph{permut_pca_test()} for the generic \emph{plot()} function.
+#'This function is a wrapper to the plotting functions in the \emph{syndromics} package
+#'to make plotting faster from the object class "syndromics" returned by
+#'\emph{pc_stability()} or \emph{permut_pca_test()} for the generic \emph{plot()} function.
+#'
+#'see each plotting function for details in other arguments.
+#'
+#'@author Abel Torres Espin
+#'
+#'@param x Object class "syndromics" returned by
+#'\emph{pc_stability()} or \emph{permut_pca_test()}
+#'@param plot_type character string specifying the type of the plot. The function will
+#'automatically select a type of plot that is most adequate, but it can be changed. The options
+#'are \emph{barmap}, \emph{heatmap}, \emph{syndromics} and \emph{VAF}.
+#'@param ndim Numeric. Number of dimensions to plot.
+#'@param plot_resample Logical. Whether to plot the resamples from \emph{pc_stability()} or \emph{permut_pca_test()}
+#'in \emph{barmap} plots. If set to TRUE, confidence intervals will be plotted.
+#'@param communalities Logical. Whether communalities using \emph{barmap} should be plotted rather than loadings.
+#'@param ... Further arguments pass down to the corresponding plotting function.
+#'
+#'
+#'@export
 plot.syndromics<-function(x,plot_type="barmap",ndim=NULL,plot_resample=F,
                           communalities=F,...){
 

@@ -13,6 +13,32 @@
   ...
 )
 }
+\arguments{
+\item{x}{Object class "syndromics" returned by
+\emph{pc_stability()} or \emph{permut_pca_test()}}
+
+\item{plot_type}{character string specifying the type of the plot. The function will
+automatically select a type of plot that is most adequate, but it can be changed. The options
+are \emph{barmap}, \emph{heatmap}, \emph{syndromics} and \emph{VAF}.}
+
+\item{ndim}{Numeric. Number of dimensions to plot.}
+
+\item{plot_resample}{Logical. Whether to plot the resamples from \emph{pc_stability()} or \emph{permut_pca_test()}
+in \emph{barmap} plots. If set to TRUE, confidence intervals will be plotted.}
+
+\item{communalities}{Logical. Whether communalities using \emph{barmap} should be plotted rather than loadings.}
+
+\item{...}{Further arguments pass down to the corresponding plotting function.}
+}
 \description{
-Method to plot results from pc_stability or permut_pca_test
+S3 method of object class "syndromics" returned by
+\emph{pc_stability()} or \emph{permut_pca_test()} for the generic \emph{plot()} function.
+This function is a wrapper to the plotting functions in the \emph{syndromics} package
+to make plotting faster from the object class "syndromics" returned by
+\emph{pc_stability()} or \emph{permut_pca_test()} for the generic \emph{plot()} function.
+
+see each plotting function for details in other arguments.
+}
+\author{
+Abel Torres Espin
 }

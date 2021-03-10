@@ -32,6 +32,8 @@
 \item{center}{Logical. Whether pca is conducted on the centered data.}
 
 \item{.scale}{Logical. Whether pca is conducted on the scaled data.}
+
+\item{...}{Not in use}
 }
 \value{
 A matrix with one sample bootstrapped standardized loadings. This will be returned to the

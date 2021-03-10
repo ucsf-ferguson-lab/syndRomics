@@ -12,14 +12,14 @@ barmap_loading(
   resample_ci = NULL,
   conf = 0.95,
   plot_list_center = F,
-  plot_legend = T,
+  plot_legend = TRUE,
   text_values = F,
   star_values = F,
   text_size = 2,
-  plot_cutoff = T,
+  plot_cutoff = TRUE,
   vars = NULL,
   colors = c("steelblue1", "white", "firebrick1"),
-  gradient_color = T
+  gradient_color = TRUE
 )
 }
 \arguments{
@@ -43,7 +43,7 @@ These can be obtained by the pc_stability or permut_pc_test "results" element or
 
 \item{plot_legend}{Logical. Whether legend should be plotted.}
 
-\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default=TRUE}
+\item{text_values}{Logical. Whether to plot the values of the loadings or not. Default= TRUE}
 
 \item{star_values}{Logical. Whether to plot a star in |loadings|>=cutoff. Only relevant if
 \emph{text_values}=FALSE. Default=FALSE}
@@ -68,7 +68,10 @@ Returns a \emph{ggplot2} object.
 Plot a Barmap of the standardized loadings from a PCA solution.
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+barmap_loading(pca = pca_mtcars, pca_data = mtcars, ndim = 1:4)
 
 }
 \author{

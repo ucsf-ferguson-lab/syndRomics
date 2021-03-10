@@ -1,25 +1,41 @@
-Package: syndRomics
 Type: Package
-Title: Component loading interpretation and visualization with syndromic plots
-Version: 0.0.2.9000
-Author: Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson
+Package: syndRomics
+Title: Component loading interpretation and visualization with
+    syndromic plots
+Version: 0.0.5
+Author: Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos
+    Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson
 Maintainer: Abel Torres Espin <atpspin@gmail.com>
-Description: The syndRomics package offers functionalities that aid in the steps for syndromics analysis 
-  by means of principal component analysis (PCA). The key steps in the syndromic analysis by PCA workflow are: 
-  1) component selection, the selection of PCs or syndromic components to keep for subsequent analysis, 
-  2) component interpretation, the determination of the meaning of the extracted syndromic components, 
-  3) component stability, the study of the syndromic component robustness for better generalization, and 
-  4) component visualization.
+Description: The syndRomics package offers functionalities that
+    aid in the steps for syndromics analysis by means of principal
+    component analysis (PCA). The key steps in the syndromic analysis by
+    PCA workflow are: 1) component selection, the selection of PCs or
+    syndromic components to keep for subsequent analysis, 2) component
+    interpretation, the determination of the meaning of the extracted
+    syndromic components, 3) component stability, the study of the
+    syndromic component robustness for better generalization, and 4)
+    component visualization.
 License: MIT + file LICENSE
+Depends: 
+    dplyr,
+    ggplot2,
+    progress,
+    R (>= 3.5.0),
+    stringr,
+    tidyr
+Imports: 
+    boot,
+    ggnewscale,
+    ggrepel,
+    pracma,
+    rlang
+Suggests: 
+    Gifi,
+    knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: 
+    knitr
 Encoding: UTF-8
 LazyData: false
-Imports: 
-  ggrepel,
-  ggnewscale,
-  pracma,
-  boot,
-  rlang
 RoxygenNote: 7.1.1
-Depends: R (>= 3.0.0), dplyr, ggplot2, stringr, tidyr,progress
-Suggests: knitr, rmarkdown, Gifi
-VignetteBuilder: knitr

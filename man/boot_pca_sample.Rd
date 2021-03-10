@@ -6,6 +6,43 @@
 \usage{
 boot_pca_sample(data, indices, pca, ...)
 }
+\arguments{
+\item{data}{The data argument passed from the \emph{boot} function}
+
+\item{indices}{The indices of the rows for the bootstrapped sample passed from the \emph{boot} function}
+
+\item{pca}{Object of class \emph{prcomp} or \emph{princals}.}
+
+\item{...}{Further arguments pass to \emph{?boot_pca_sample.prcomp} or \emph{?boot_pca_sample.princals}}
+}
+\value{
+A matrix with one sample bootstrapped standardized loadings. This will be returned to the
+\emph{boot} function when \emph{pc_stability} function is called.
+}
 \description{
-Generic Bootstrapping PCA sample
+This function is an S3 generic function for bootstrapping PCA samples. Current
+implemented methods are for objects of class "prcomp" returned by the \emph{prcomp()} function, and
+objects of class "princals" returned by the \emph{Gifi::princals()} function.
+See \emph{?boot_pca_sample.prcomp} or \emph{?boot_pca_sample.princals} for more details.
+}
+\details{
+A major problem of performing bootstrapping procedures in PCA is what is known as sign reflection:
+the change of the sign (positive/negative) on the component loadings in a PC given slight variations in the data. In addition,
+component/factor translocation can occur, meaning that the position of one component can change in a particular
+PCA solution, especially when two components have similar VAF. Another problem on performing PCAs with variations
+in the data is the possibility of rotation indeterminacy when the PCA solution of a resampled data presents with a
+different rotation of the original PCA solution. These issues generate artificially biased bootstrapped distributions,
+reducing the performance of the procedure. We have implemented a step of procrustes rotation between the original
+loadings (target) and the bootstrapped sample, which has previously been demonstrated to be a reasonable method to deal with such
+issues. The procrustes rotation is obtained by the \emph{pracma::procrustes()} function.
+}
+\references{
+\enumerate{
+ \item Linting M, Meulman JJ, Groenen PJF, van der Kooij AJ. Stability of nonlinear principal components analysis: An empirical study using the balanced bootstrap. Psychol Methods. 2007;12(3):359–79.
+ \item	Babamoradi H, van den Berg F, Rinnan Å. Bootstrap based confidence limits in principal component analysis — A case study. Chemom Intell Lab Syst. 2013 Jan 15;120:97–105.
+ \item	Timmerman ME, Kiers HAL, Smilde AK. Estimating confidence intervals for principal component loadings: a comparison between the bootstrap and asymptotic results. Br J Math Stat Psychol. 2007 Nov;60(Pt 2):295–314
+}
+}
+\author{
+Abel Torres Espin
 }

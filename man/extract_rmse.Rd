@@ -24,6 +24,20 @@ RMSE has been also used as a metric
   in both components \emph{x} and \emph{y}. A RMSE of 0 corresponds to a perfect match.
   The smaller the RMSE is, the more equivalent two components are.
 }
+\examples{
+data(mtcars)
+pca_mtcars_1<-prcomp(mtcars, center = TRUE, scale = TRUE)
+
+#Second pca with a subsetted mtcars as an example of comparing loading patterns
+#from two proximal datasets
+pca_mtcars_2<-prcomp(mtcars[1:20,], center = TRUE, scale = TRUE)
+
+s.loadings_1<-stand_loadings(pca = pca_mtcars_1, pca_data = mtcars)
+s.loadings_2<-stand_loadings(pca = pca_mtcars_2, pca_data = mtcars[1:20,])
+
+extract_rmse(s.loadings_1[,1], s.loadings_2[,1])
+
+}
 \references{
 Guadagnoli E, Velicer W. A Comparison of Pattern Matching Indices. Multivar Behav Res. 1991 Apr;26(2):323–43
 }

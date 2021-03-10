@@ -38,7 +38,10 @@ Returns a \emph{ggplot2} object.
 Plot of VAF from a PCA solution given the first ndim PCs.
 }
 \examples{
-pca<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+data(mtcars)
+pca_mtcars<-prcomp(mtcars, center = TRUE, scale. = TRUE)
+
+VAF_plot(pca = pca_mtcars, pca_data = mtcars, ndim = 1:7)
 
 }
 \author{
