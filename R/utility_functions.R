@@ -748,8 +748,8 @@ boot_pca_sample.prcomp<-function(data, indices, pca, original_loadings,ndim,pb=N
 #'
 boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,pb=NULL,...){
 
-  # data<-pca_data
-  # indices<-sample(1:nrow(data), size = nrow(data),replace = F)
+  # indices<-sample(1:nrow(data), size = nrow(data),replace = T)
+  # pca<-nlpca
 
   d<-as.data.frame(data[indices,])
 
@@ -769,7 +769,7 @@ boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,p
 
   error<-try(pca_per<-eval(pca$call), silent = TRUE)
 
-  if (class(error)!='try-error'){
+  if (class(error)[1]!='try-error'){
     load<-stand_loadings(pca_per, d)
     dimension<-min(dim(original_loadings)[2],dim(load)[2])
     original_loadings<-original_loadings[,1:dimension]
