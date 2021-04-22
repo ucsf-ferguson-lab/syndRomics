@@ -412,8 +412,21 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
                         text_size=2, var_order='increasing',vars=NULL,
                         colors=c("white","firebrick1"), gradient_color= TRUE){
 
-  # pca=b_test$pca
-  # pca_data=b_test$pca_data
+  # pca=prcomp(mtcars, scale. = T, center = T)
+  # pca_data=mtcars
+  # ndim = 1:3
+  # load_list = ibooted_PCA$boot_samples
+  # conf = 0.95
+  # plot_legend = TRUE
+  # text_values = T
+  # text_size = 2
+  # var_order = "increasing"
+  # vars = NULL
+  # colors = c("white", "firebrick1")
+  # gradient_color = TRUE
+  # plot_original = TRUE
+  # plot_list_center = TRUE
+
 
   old_scipen<-getOption('scipen')
   on.exit(options(scipen=old_scipen))
@@ -491,17 +504,22 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
     mean_communalities<-apply(array_b, 2, mean)
     ci_low_c<-apply(array_b,2,function(x) quantile(x, (1-conf)/2, na.rm = TRUE))
     ci_high_c<-apply(array_b,2,function(x) quantile(x, 1-(1-conf)/2, na.rm = TRUE))
+    summary_communalities<-data.frame(mean_communalities = mean_communalities,
+                                      ci_low_c = ci_low_c,
+                                      ci_high_c = ci_high_c,
+                                      Variables = names (mean_communalities))
 
     results_c<-cbind(commun_df,mean_communalities, ci_low_c,ci_high_c)
-    com_df<-as.data.frame(results_c)
-    com_df$Variables<-row.names(results_c)
+
+    results_c<-commun_df%>%
+      full_join(summary_communalities, by="Variables")
 
     c_plot<-c_plot+
-        geom_errorbar(data=com_df, aes(ymin=.data$ci_low_c, ymax=.data$ci_high_c,
+        geom_errorbar(data=results_c, aes(ymin=.data$ci_low_c, ymax=.data$ci_high_c,
                                        x=.data$Variables), inherit.aes = F, width=0.5)
     if (plot_list_center){
       c_plot<-c_plot+
-        geom_point(data=com_df, aes(y=.data$mean_communalities, x=.data$Variables), inherit.aes = F)
+        geom_point(data=results_c, aes(y=.data$mean_communalities, x=.data$Variables), inherit.aes = F)
     }
   }
 
@@ -697,10 +715,10 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
                        ci_type='bca', conf=0.95,...){
 
   # pca<-pca
-  # pca_data<-mtcars
+  # pca_data<-data
   # ndim=3
-  # B=200
-  # sim='balanced'
+  # B=10
+  # sim='ordinary'
   # ci_type='bca'
   # conf=0.95
   # test_similarity= TRUE
@@ -738,7 +756,7 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 
   b_pca<-boot::boot(data = pca_data, pca=pca, statistic = boot_pca_sample, R=B,
               ndim=ndim,original_loadings=original_loadings,
-              sim = sim, pb=pb, center=center, .scale=.scale,...)
+              sim = sim, pb=NULL, center=center, .scale=.scale,...)
   b_pca$t<-na.omit(b_pca$t)
   b_pca$R<-dim(b_pca$t)[1]
 
