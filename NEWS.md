@@ -1,6 +1,12 @@
 # syndRomics 0.0.6
 
--Bug fix: variable order for plotting CI error vars did not match variable reordering based on the var_order argument in the barmap communality plots.
+**Bug fix:** 
+
+* variable order for plotting CI error vars did not match variable reordering based on the var_order argument in the barmap communality plots.
+
+* add new catch error in permutation functions for repeated run failure. Now if there are 3 consecutive failures at running the pca would stop.
+
+* there was a bug preventing some call of princals to finish as it will get stuck in an loop during permutation. It has been fixed.
 
 # syndRomics 0.0.5
 

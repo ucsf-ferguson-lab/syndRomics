@@ -900,13 +900,24 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
   if(!is.null(pb)){
     pb$tick()
   }
-  x<-apply(x, 2,function(x){base::sample(x, length(x))})
+  x<-x%>%
+    mutate_all(.funs = sample)
 
   error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = TRUE)
+  n_errors<-0
 
   while (class(error)[1]=='try-error'){
-    x<-apply(x, 2,function(x){base::sample(x, length(x))})
+    x<-x%>%
+      mutate_all(.funs = sample)
     error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = TRUE)
+
+    n_errors<-n_errors+1
+
+    if(n_errors==3){
+      stop(paste("The permutation process has produced 3 consecutive errors when calling prcomp after permutting","\n",
+                 "This might be because NA values, very few cases or poor representation in some levels","\n\n",
+                 error[1]))
+    }
   }
 
   if (output=='s.loadings'|| output=='commun'){
@@ -948,7 +959,8 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
   if(!is.null(pb)){
     pb$tick()
   }
-  x<-apply(x, 2,function(x){base::sample(x, length(x))})
+  x<-x%>%
+    mutate_all(.funs = sample)
 
   pca$call$data<-quote(x)
 
@@ -959,13 +971,25 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
     pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
   }
-  error<-try(pca_per<-eval(pca$call),silent = TRUE)
+  error<-try(pca_per<-eval(pca$call),silent = T)
+
+  n_errors<-0
 
   while (class(error)[1]=='try-error'){
-    x<-apply(x, 2,function(x){base::sample(x, length(x))})
+    x<-x%>%
+      mutate_all(.funs = sample)
     pca$call$data<-quote(x)
 
-    error<-try(pca_per<-eval(pca$call),silent = TRUE)
+    error<-try(pca_per<-eval(pca$call),silent = T)
+
+    n_errors<-n_errors+1
+
+    if(n_errors==3){
+      stop(paste("The permutation process has produced 3 consecutive errors when calling princals after permutting",
+                 "\n",
+                 "This might be because NA values, very few cases or poor representation in some levels","\n\n",
+                 error[1]))
+    }
   }
 
   if (output=='s.loadings'|| output=='commun'){
@@ -1011,6 +1035,9 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
 
   list_perm_loadings<-list()
   i<-1
+
+  n_errors<-0
+
   while(i<=ncol(x)){
 
     perm_x<-x
@@ -1033,8 +1060,19 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
       }
 
       i<-i+1
+      n_errors<-0
+    }else{
+      n_errors<-n_errors+1
+    }
+
+    if(n_errors==3){
+      stop(paste("The permutation process has produced 3 consecutive errors when calling prcomp after permutting variable:",
+                 colnames(perm_x)[i],"\n",
+                 "This might be because NA values, few cases or poor representation in some levels","\n\n",
+                 error[1]))
     }
   }
+
   list_perm_loadings<-do.call(rbind, list_perm_loadings)
   rownames(list_perm_loadings)<-colnames(x)
   colnames(list_perm_loadings)<-paste0("PC", 1:ndim)
@@ -1072,24 +1110,33 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
 #'
 permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,...){
 
+  # pca<-pca_pool
+  # x<-d
+  # output <- "commun"
+  # original_loadings<-extract_loadings(pca,x)
+  # original_loadings$Variables<-NULL
+  # ndim<-3
+
   list_perm_loadings<-list()
   i<-1
+
+  if (is.null(pca$call$knots)){
+    pca$call$knots<-quote(Gifi::knotsGifi(perm_x, "D"))
+  }else{
+    knottype<-pca$call$knots$type
+    n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
+    pca$call$knots<-quote(Gifi::knotsGifi(perm_x, knottype, n))
+  }
+
+  n_errors<-0
 
   while(i<=ncol(x)){
 
     perm_x<-x
-    perm_x[,i]<-sample(x[,i], length(x[,i]))
+    perm_x[,i]<-sample(x[,i])
     pca$call$data<-quote(perm_x)
 
-    if (is.null(pca$call$knots)){
-      pca$call$knots<-quote(Gifi::knotsGifi(perm_x, "D"))
-    }else{
-      type<-pca$call$knots$type
-      n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-      pca$call$knots<-quote(Gifi::knotsGifi(perm_x, type, n))
-    }
-
-    error<-try(pca_per<-eval(pca$call),silent = TRUE)
+    error<-try(pca_per<-eval(pca$call),silent = T)
 
 
     if (class(error)[1]!='try-error'){
@@ -1107,6 +1154,16 @@ permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,.
       }
 
       i<-i+1
+      n_errors<-0
+    }else{
+      n_errors<-n_errors+1
+    }
+
+    if(n_errors==3){
+      stop(paste("The permutation process has produced 3 consecutive errors when calling princals after permutting variable:",
+              colnames(perm_x)[i],"\n",
+              "This might be because NA values, few cases or poor representation in some levels","\n\n",
+              error[1]))
     }
   }
   list_perm_loadings<-do.call(rbind, list_perm_loadings)
