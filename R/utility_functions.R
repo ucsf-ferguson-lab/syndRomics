@@ -954,7 +954,7 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
 #'}
 #'
 #'@export
-#'
+#'@importFrom Gifi princals
 permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
 
   if(!is.null(pb)){
@@ -1109,7 +1109,7 @@ permut_pca_V.prcomp<-function(pca, x, output, center,.scale,
 #'}
 #'
 #'@export
-#'
+#'@importFrom Gifi princals
 permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,...){
 
   # pca<-pca_pool
