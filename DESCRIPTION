@@ -28,9 +28,9 @@ Imports:
     ggnewscale,
     ggrepel,
     pracma,
-    rlang
+    rlang,
+    Gifi
 Suggests: 
-    Gifi,
     knitr,
     rmarkdown,
     testthat
