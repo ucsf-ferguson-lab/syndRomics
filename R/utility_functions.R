@@ -758,13 +758,14 @@ boot_pca_sample.princals<-function(data, indices, pca, original_loadings, ndim,p
   }
 
   pca$call$data<-quote(d)
+  pca$call$ordinal<-unname(pca$ordinal)
 
   if (is.null(pca$call$knots)){
     pca$call$knots<-quote(Gifi::knotsGifi(d, "D"))
   }else{
-    type<-pca$call$knots$type
+    knottype<-pca$call$knots$type
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-    pca$call$knots<-quote(Gifi::knotsGifi(d, type, n))
+    pca$call$knots<-quote(Gifi::knotsGifi(d, knottype, n))
   }
 
   error<-try(pca_per<-eval(pca$call), silent = TRUE)
@@ -963,13 +964,14 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
     mutate_all(.funs = sample)
 
   pca$call$data<-quote(x)
+  pca$call$ordinal<-unname(pca$ordinal)
 
   if (is.null(pca$call$knots)){
     pca$call$knots<-quote(Gifi::knotsGifi(x, "D"))
   }else{
-    type<-pca$call$knots$type
+    knottype<-pca$call$knots$type
     n<-ifelse(is.null(pca$call$knots$n),3,pca$call$knots$n)
-    pca$call$knots<-quote(Gifi::knotsGifi(x, type, n))
+    pca$call$knots<-quote(Gifi::knotsGifi(x, knottype, n))
   }
   error<-try(pca_per<-eval(pca$call),silent = T)
 
@@ -1135,6 +1137,7 @@ permut_pca_V.princals<-function(pca, x, output,original_loadings,ndim, pb=NULL,.
     perm_x<-x
     perm_x[,i]<-sample(x[,i])
     pca$call$data<-quote(perm_x)
+    pca$call$ordinal<-unname(pca$ordinal)
 
     error<-try(pca_per<-eval(pca$call),silent = T)
 
