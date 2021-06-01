@@ -19,6 +19,7 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'@param arrow_size_multi Numeric. Controls the size of the arrows proportional to the loading. Default=10
 #'@param repel Logical. Whether to repel the text for preventing text overlap. Default= TRUE
 #'@param plot_legend Logical. Whether to plot the legend or not. Default= TRUE
+#'@param plot_cutoff Logical. Whether to report the cutoff on the legend or not. Default = TRUE
 #'@param text_size Numeric. Controls for the size of the text. Default=9
 #'@param var_order Character. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise. Possible values: 'abs decreasing': plot by decreasing absolute value;
 #''abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’.
@@ -42,7 +43,7 @@ guide_colorbar <- function(...) ggplot2::guide_colorbar(...)
 #'@importFrom rlang .data
 #'
 syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_multi=10,
-                         repel= TRUE, plot_legend= TRUE, text_size=9,
+                         repel= TRUE, plot_legend= TRUE, plot_cutoff=TRUE,text_size=9,
                          var_order='abs decreasing',colors=c("steelblue1","white","firebrick1"),
                          ...){
 
@@ -74,7 +75,7 @@ syndromic_plot<-function(pca, pca_data=NULL, ndim=3, cutoff, VAF,arrow_size_mult
     try(s_plot<-extract_syndromic_plot(load_df = load_df, pc=pc, cutoff=c, VAF=v, text_size= text_size,
                                        arrow_size_multi = arrow_size_multi, repel = repel,
                                        var_order=var_order, plot_legend = plot_legend,
-                                       colors=colors))
+                                       colors=colors, plot_cutoff = plot_cutoff))
 
     s_list[[pc]]<-s_plot
   }
@@ -538,6 +539,51 @@ barmap_commun<-function(pca, pca_data, ndim=1:5,load_list=NULL,conf=0.95, plot_o
   }
 
   return(c_plot)
+}
+
+#'@title Category quantification plot
+#'@description Plot of the projection of the category quantification into the loading vector for
+#'non-linear pca variables of an object of the class "princals".
+#'
+#'@author Abel Torres Espin
+#'
+#'@param pca Object of class \emph{prcomp}, \emph{princals}, or \emph{data.frame}. If object is a \emph{prcomp} or \emph{princals} object, \emph{pca_data} is required, and
+#'the loadings will be extracted. If object is a data.frame object, the dataframe needs to be formatted as: first column named \emph{Variables} and all other columns corresponding to a PC.
+#' One row per variable. The values are the loadings.
+#'
+#'@param pca_data Data passed to the \emph{prcomp} or \emph{princals} function.
+#'@param var Character vector. Vector with the character name of the variables to plot.
+#'@param plot_dim Numeric vector of length 2. Dimensions (aka principal components) to be plotted.
+#'@param nudge_y  Numeric. Controls y the displacement of the label position for the name of each level.
+#'@param nudge_x Numeric. Controls y the displacement of the label position for the name of each level.
+#'
+#'@return Returns a list \emph{ggplot2} object, one per each specified variable
+#'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars<-Gifi::princals(mtcars)
+#'
+#'category_quant_plot(pca = pca_mtcars, pca_data = mtcars, var=c("cyl", "vs"))
+#'
+#'@references
+#'\enumerate{
+#'  \item Linting, M., Meulman, J. J., Groenen, P. J. F., & van der Koojj, A. J. (2007). Nonlinear principal components analysis: Introduction and application. Psychological Methods, 12(3), 336–358. https://doi.org/10.1037/1082-989X.12.3.336
+#'  \item Linting, M., & Kooij, A. van der. (2012). Nonlinear Principal Components Analysis With CATPCA: A Tutorial. Journal of Personality Assessment, 94(1), 12–25. https://doi.org/10.1080/00223891.2011.627965
+#'}
+#'
+#'@export
+#'
+category_quant_plot<-function(pca, pca_data, var, plot_dim=c(1,2),
+                              nudge_y, nudge_x){
+
+  results<-list()
+
+  for (i in var){
+    results[[i]]<-extract_category_quant_plot(pca=pca, pca_data=pca_data, i,
+                                              plot_dim=plot_dim, nudge_y, nudge_x)
+  }
+
+  return(results)
 }
 
 #'@title Variance accounted for plot
@@ -1126,16 +1172,16 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
     per_df<-per_df%>%pivot_longer(-c(.data$id,.data$Variables),
                                   names_to = "component", values_to = "loading")
 
-    results<-suppressMessages(per_df%>%
-      filter(.data$component%in%colnames(original_loadings))%>%
-      left_join(original_communalities,by = "Variables")%>%
-      group_by(.data$Variables, .data$id)%>%
-      mutate(communality=sum(.data$loading^2))%>%
-      group_by(.data$Variables)%>%
-      dplyr::summarise(original=mean(.data$original_communality),mean=mean(.data$communality),
-                       ci_low=quantile(.data$communality, (1-conf)/2, na.rm = TRUE),
-                       ci_high=quantile(.data$communality, 1-(1-conf)/2, na.rm = TRUE),
-                       pvalue=(sum(abs(.data$communality)>abs(.data$original_communality))+1)/(length(per_list)+1))
+    results <- suppressMessages(per_df%>%
+                                  filter(.data$component%in%colnames(original_loadings))%>%
+                                  group_by(.data$Variables, .data$id)%>%
+                                  dplyr::summarise(communality=sum(.data$loading^2))%>%
+                                  left_join(original_communalities,by = "Variables")%>%
+                                  group_by(.data$Variables)%>%
+                                  dplyr::summarise(original=mean(.data$original_communality),mean=mean(.data$communality),
+                                                   ci_low=quantile(.data$communality, (1-conf)/2, na.rm = TRUE),
+                                                   ci_high=quantile(.data$communality, 1-(1-conf)/2, na.rm = TRUE),
+                                                   pvalue=(sum(.data$communality>.data$original_communality)+1)/(length(per_list)+1))
     )
 
     if(!adj.method%in%'none'){

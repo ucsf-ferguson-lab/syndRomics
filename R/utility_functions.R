@@ -115,7 +115,8 @@ extract_loadings<-function(pca, pca_data){
 #'@param arrow_size_multi Numeric. Controls the size of the arrows proportional to the loading. Default=10
 #'@param repel Logical. Whether to repel the text for preventing text overlap. Default=FALSE
 #'@param plot_legend Logical. Whether to plot the legend or not. Default=TRUE
-#'@param text_size Numeric. Controls for the size of the text. Default=9
+#'@param plot_cutoff Logical. Whether to report the cutoff on the legend or not. Default = TRUE
+#'@param text_size Numeric. Controls for the size of the text. Default=9.
 #'@param var_order Character, character vector or numeric vector. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise.
 #'Possible values: 'abs decreasing': plot by decreasing absolute value;
 #''abs increasing': plot by increasing absolute value; 'decreasing'; or 'increasing’. A vector can be specified with a custom order of the variables
@@ -133,7 +134,7 @@ extract_loadings<-function(pca, pca_data){
 #'@importFrom rlang .data
 #'
 extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10,
-                                 repel=F,plot_legend=T,text_size=6,
+                                 repel=F,plot_legend=TRUE,plot_cutoff=TRUE, text_size=6,
                                  var_order='abs decreasing', colors=c("steelblue1","white","firebrick1")){
 
   old_scipen<-getOption('scipen')
@@ -195,16 +196,6 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
       hadjust=ifelse(.data$y<(-3) | .data$y>3, 'center',.data$hadjust)
     )
 
-  # p[p$Variables%in%dif_var,'loading_txt']<-
-  #   paste("|",
-  #         abs(round(p[p$Variables%in%dif_var,'loading'],3)),
-  #         "|",sep = "")
-  # arbitrary_df<-p%>%
-  #   mutate(arrow_weight=ifelse(.data$Variables%in%dif_var,abs(.data$loading),NA))
-  #
-  # load_df<-p%>%
-  #   mutate(loading=ifelse(.data$Variables%in%dif_var,NA,.data$loading))
-
   angle1<-seq(0,1.2,length.out = 50)
   angle2<-seq(1.95,3.18,length.out = 50)
   angle3<-seq(4.02,5.4,length.out = 50)
@@ -227,21 +218,51 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
                    axis.ticks= element_blank(),axis.line = element_blank(),
                    legend.text = element_blank(),legend.direction = 'horizontal',
                    legend.position = 'bottom',text = element_text(size=text_size*2))+
-    ggplot2::xlim(-12,12)+
-    ggplot2::ylim(-12,12)+
+    ggplot2::xlim(-13,13)+
+    ggplot2::ylim(-13,13)+
     coord_equal()
 
-
-  legend_res<-0.005
-  legend_df<-data.frame(x=seq(-3,3,legend_res),
-                        z=seq(-1,1,legend_res/3))%>%
-    dplyr::mutate(xend=ifelse(.data$x<=0, .data$x-legend_res, .data$x+legend_res), y=rep(-11, length(.data$x)),
-                  yend=rep(-11, length(.data$x)))
-
   if (plot_legend){
-    s_plot<-s_plot+ggplot2::geom_segment(data=legend_df, aes(x=.data$x, y=.data$y, xend=.data$xend,
-                                                             yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
-                                         inherit.aes = FALSE, show.legend = FALSE)+
+    legend_res<-0.005
+    legend_df<-data.frame(x=seq(-3,3,legend_res),
+                          z=seq(-1,1,legend_res/3))%>%
+      dplyr::mutate(xend=ifelse(.data$x<=0, .data$x-legend_res, .data$x+legend_res),
+                    y=rep(-11, length(.data$x)),
+                    yend=rep(-11, length(.data$x)))
+
+
+    if (plot_cutoff){
+
+      legend_df_cutoff<-legend_df%>%
+        filter(abs(x)<3*cutoff)
+
+      cutoff_line.xmin<-min(legend_df_cutoff$x)
+      cutoff_line.xmax<-max(legend_df_cutoff$x)
+
+      legend_df<-legend_df%>%
+        filter(abs(x)>3*cutoff)
+
+      s_plot<-s_plot+
+        ggplot2::geom_segment(data=legend_df, aes(x=.data$x, y=.data$y, xend=.data$xend,
+                                                  yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
+                              inherit.aes = FALSE, show.legend = FALSE)+
+        geom_segment(data=legend_df_cutoff, aes(x=.data$x, y=.data$y, xend=.data$xend,
+                                                yend=.data$yend, size=abs(.data$z)*20, alpha=abs(.data$z)),
+                     inherit.aes = FALSE, show.legend = FALSE, color="grey")+
+        ggplot2::annotate(geom = "text", x=0, y=-12.5,
+                          label = paste0("Loadings > |", cutoff,"|"), size=text_size-2)+
+        ggplot2::annotate(geom="segment", x=cutoff_line.xmin, xend = cutoff_line.xmin,
+                          y=-10.6, yend=-11.4, size=1, alpha=0.5)+
+        ggplot2::annotate(geom="segment", x=cutoff_line.xmax, xend = cutoff_line.xmax,
+                          y=-10.6, yend=-11.4, size=1,alpha=0.5)
+    }else{
+      s_plot<-s_plot+
+        ggplot2::geom_segment(data=legend_df, aes(x=.data$x, y=.data$y, xend=.data$xend,
+                                                  yend=.data$yend,color=.data$z, size=abs(.data$z)*20),
+                              inherit.aes = FALSE, show.legend = FALSE)
+    }
+
+    s_plot<-s_plot+
       ggplot2::geom_segment(aes(x=max(legend_df$x), y=-11, xend=max(legend_df$x)+0.1,
                                 yend=-11),color=colors[3],arrow = arrow(type='closed',
                                                                         length = unit(0.1, 'cm'), angle = 25),
@@ -253,17 +274,6 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
       ggplot2::annotate(geom='text', x=-4.1, y=-11, label="-1", size=text_size)+
       ggplot2::annotate(geom='text', x=4.1, y=-11, label="1", size=text_size)
   }
-
-  # if (!is.null(dif_var)){
-  #   s_plot<-s_plot+
-  #     ggnewscale::new_scale_color() +
-  #     ggplot2::geom_segment(data=arbitrary_df,aes(color=.data$arrow_weight),
-  #                           arrow = arrow(type='closed', length = unit(0.3, 'cm'), angle = 25),
-  #                           size=abs(p$arrow_weight)*arrow_size_multi, show.legend = FALSE,
-  #                           linejoin = 'mitre')
-  #     # scale_color_gradient(low='white', high=dif_var_colors,limits=c(0,1), na.value =  "transparent")
-  #     # scale_color_manual(values = dif_var_colors)
-  # }
 
   s_plot<-s_plot+
     ggplot2::annotate(geom='text',x=0, y=0.25, vjust = 'center', hjust = 'center', color='black', label=pc, size=text_size,)+
@@ -281,6 +291,85 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
   return(s_plot)
 }
 
+
+#'@title Extract the category quantification plot
+#'@description Plot of the projection of the category quantification into the loading vector for
+#'non-linear pca variables of an object of the class "princals".
+#'
+#'@author Abel Torres Espin
+#'
+#'@param pca Object of class \emph{prcomp}, \emph{princals}, or \emph{data.frame}. If object is a \emph{prcomp} or \emph{princals} object, \emph{pca_data} is required, and
+#'the loadings will be extracted. If object is a data.frame object, the dataframe needs to be formatted as: first column named \emph{Variables} and all other columns corresponding to a PC.
+#' One row per variable. The values are the loadings.
+#'
+#'@param pca_data Data passed to the \emph{prcomp} or \emph{princals} function.
+#'@param var Character. Character name of the variables to plot.
+#'@param plot_dim Numeric vector of length 2. Dimensions (aka principal components) to be plotted.
+#'@param nudge_y  Numeric. Controls y the displacement of the label position for the name of each level.
+#'@param nudge_x Numeric. Controls y the displacement of the label position for the name of each level.
+#'
+#'@return Returns a list \emph{ggplot2} object, one per each specified variable
+#'
+#'@examples
+#'data(mtcars)
+#'pca_mtcars<-Gifi::princals(mtcars)
+#'
+#'extract_category_quant_plot(pca = pca_mtcars, pca_data = mtcars, var="cyl"))
+#'
+#'@references
+#'\enumerate{
+#'  \item Linting, M., Meulman, J. J., Groenen, P. J. F., & van der Koojj, A. J. (2007). Nonlinear principal components analysis: Introduction and application. Psychological Methods, 12(3), 336–358. https://doi.org/10.1037/1082-989X.12.3.336
+#'  \item Linting, M., & Kooij, A. van der. (2012). Nonlinear Principal Components Analysis With CATPCA: A Tutorial. Journal of Personality Assessment, 94(1), 12–25. https://doi.org/10.1080/00223891.2011.627965
+#'}
+#'@export
+#'
+extract_category_quant_plot<-function(pca, pca_data, var, plot_dim=c(1,2),
+                              nudge_y, nudge_x){
+
+  if(length(var)>1){
+    stop("To obtain the plot for more than one variable, use category_quant_plot()")
+  }
+
+  pca_data[,var]<-factor(pca_data[,var])
+
+  centroid_x<-tapply(pca$objectscores[,plot_dim[1]], pca_data[,var], mean)
+  centroid_y<-tapply(pca$objectscores[,plot_dim[2]], pca_data[,var], mean)
+
+  loading_x<-pca$loadings[var,plot_dim[1]]
+  loading_y<-pca$loadings[var,plot_dim[2]]
+
+  slope<-loading_y/loading_x
+  xp<-(centroid_x+slope*centroid_y)/(1+slope^2)
+  yp<-(slope*centroid_x+slope^2*centroid_y)/(1+slope^2)
+
+  loading_df<-data.frame(loading_x, loading_y)
+  projection_df<-data.frame(xp, yp)
+  projection_df$level_c<-levels(pca_data[,var])
+
+  c_plot<-ggplot2::ggplot(projection_df, aes(xp, yp))
+
+  if(slope>0){
+    c_plot<- c_plot+
+      ggplot2::geom_segment(aes(x=max(xp), xend=min(xp), y=max(yp), yend=min(yp)))
+  }else{
+    c_plot<- c_plot+
+      ggplot2::geom_segment(aes(x=max(xp), xend=min(xp), y=min(yp), yend=max(yp)))
+  }
+  # geom_point(data=loading_df, aes(loading_x, loading_y), size=2)+
+  c_plot<-c_plot+
+    ggplot2::geom_segment(data=loading_df,
+                          aes(xend=loading_x,yend=loading_y,x=0, y=0), size=1.5,
+                          arrow = arrow(length = unit(4,"mm")))+
+    ggplot2::geom_point(shape=22, size=3, aes(fill=level_c))+
+    ggplot2::geom_point(x=0, y=0, color="black", size=3)+
+    ggplot2::geom_text(aes(label=level_c), nudge_y = nudge_y, nudge_x = nudge_x)+
+    ggplot2::theme_minimal()+
+    ggplot2::labs(fill=var)+
+    ggplot2::xlab(paste("Dim", plot_dim[1]))+
+    ggplot2::ylab(paste("Dim", plot_dim[2]))
+
+  return(c_plot)
+}
 
 #'@title Extracts different component/factor similarity (matching) indices
 #'
@@ -400,10 +489,10 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
     #                temp1_name,temp2_name))
     # }
 
-    rmse<-vector()
-    cc_index<-vector()
-    s_index<-vector()
-    s_HP<-vector()
+    rmse<-vector(mode = "numeric", ndim)
+    cc_index<-vector(mode = "numeric", ndim)
+    s_index<-vector(mode = "numeric", ndim)
+    s_HP<-vector(mode = "numeric", ndim)
     for (pc in 1:ndim){
       if('rmse'%in%similarity_metric){
         rmse[pc]<-extract_rmse(temp1[,pc], temp2[,pc])
@@ -901,7 +990,7 @@ permut_pca_D.prcomp<-function(pca, x, center, .scale,output, pb=NULL,...){
   if(!is.null(pb)){
     pb$tick()
   }
-  x<-x%>%
+  x<-as.data.frame(x)%>%
     mutate_all(.funs = sample)
 
   error<-try(pca_per<-prcomp(x,scale. = .scale,center = center),silent = TRUE)
@@ -960,7 +1049,7 @@ permut_pca_D.princals<-function(pca, x, output, pb=NULL,...){
   if(!is.null(pb)){
     pb$tick()
   }
-  x<-x%>%
+  x<-as.data.frame(x)%>%
     mutate_all(.funs = sample)
 
   pca$call$data<-quote(x)
