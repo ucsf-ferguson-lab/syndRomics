@@ -11,7 +11,8 @@ extract_syndromic_plot(
   VAF,
   arrow_size_multi = 10,
   repel = F,
-  plot_legend = T,
+  plot_legend = TRUE,
+  plot_cutoff = TRUE,
   text_size = 6,
   var_order = "abs decreasing",
   colors = c("steelblue1", "white", "firebrick1")
@@ -34,7 +35,9 @@ for (VAF) of the PC. If pca is the results of \emph{prcomp} or \emph{princals}, 
 
 \item{plot_legend}{Logical. Whether to plot the legend or not. Default=TRUE}
 
-\item{text_size}{Numeric. Controls for the size of the text. Default=9}
+\item{plot_cutoff}{Logical. Whether to report the cutoff on the legend or not. Default = TRUE}
+
+\item{text_size}{Numeric. Controls for the size of the text. Default=9.}
 
 \item{var_order}{Character, character vector or numeric vector. Specify the order of the variables in the plot by the loading values, starting at 12 o’clock and moving counterclockwise.
 Possible values: 'abs decreasing': plot by decreasing absolute value;

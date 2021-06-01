@@ -13,6 +13,7 @@ syndromic_plot(
   arrow_size_multi = 10,
   repel = TRUE,
   plot_legend = TRUE,
+  plot_cutoff = TRUE,
   text_size = 9,
   var_order = "abs decreasing",
   colors = c("steelblue1", "white", "firebrick1"),
@@ -38,6 +39,8 @@ the same cutoff will be used for all the PCs. If a vector is passed, each value 
 \item{repel}{Logical. Whether to repel the text for preventing text overlap. Default= TRUE}
 
 \item{plot_legend}{Logical. Whether to plot the legend or not. Default= TRUE}
+
+\item{plot_cutoff}{Logical. Whether to report the cutoff on the legend or not. Default = TRUE}
 
 \item{text_size}{Numeric. Controls for the size of the text. Default=9}
 

@@ -1,3 +1,13 @@
+# syndRomics 0.1.0
+
+**New features:**
+
+* add reporting of cutoff loadings in syndromic plots. Now there is the option to show the cutoff used to generate the syndromic plot in the legend. This is the behaviour by default.
+
+* add category quantification plots. Plot of the projection of the category quantification into the loading vector for non-linear PCA variables of an object of the class "princals".
+
+**Bug fix:**
+
 # syndRomics 0.0.6
 
 **Bug fix:** 
