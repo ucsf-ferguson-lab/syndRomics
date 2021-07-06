@@ -324,7 +324,10 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
 #'@export
 #'
 extract_category_quant_plot<-function(pca, pca_data, var, plot_dim=c(1,2),
-                              nudge_y, nudge_x){
+                              nudge_y=0, nudge_x=0){
+
+  pca_data<-mtcars
+  var<-"cyl"
 
   if(length(var)>1){
     stop("To obtain the plot for more than one variable, use category_quant_plot()")
@@ -461,9 +464,9 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
   if('all'%in%similarity_metric){
     similarity_metric<-c("cc_index", "r_correlation", "rmse","s_index")
   }
-  if ('s_index'%in%similarity_metric){
-    similarity_metric<-c(similarity_metric,"s_HP")
-  }
+  # if ('s_index'%in%similarity_metric){
+  #   similarity_metric<-c(similarity_metric,"s_HP")
+  # }
 
   minimal_ncol<-min(unlist(lapply(load.list, ncol)))
   if (minimal_ncol<ndim){
@@ -477,11 +480,11 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
     temp1_name<-lname[1]
 
     temp1<-load.list[[temp1_name]][,1:ndim]
-    temp1<-as.matrix(apply(temp1, 2, as.numeric))
+    # temp1<-as.matrix(apply(temp1, 2, as.numeric))
 
     temp2_name<-lname[2]
     temp2<-load.list[[temp2_name]][,1:ndim]
-    temp2<-as.matrix(apply(temp2, 2, as.numeric))
+    # temp2<-as.matrix(apply(temp2, 2, as.numeric))
 
     # if (!identical(dim(temp1), dim(temp2))){
     #   stop(sprintf("Error: loading matrix %s and %s have different shape. Make sure
@@ -577,10 +580,9 @@ component_similarity<-function(load.list, s_cut_off=0.4, ndim=5, similarity_metr
 #'@export
 #'
 extract_cc<-function(vector1, vector2){
-  x<-vector1
-  y<-vector2
-  x%*%y/sqrt(sum(x^2)*sum(y^2))
+  vector1%*%vector2/sqrt(sum(vector1^2)*sum(vector2^2))
 }
+
 
 ##'@title Extracts Cattell's S-statistic
 #'
