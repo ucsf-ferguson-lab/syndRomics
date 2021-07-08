@@ -2,7 +2,7 @@ Type: Package
 Package: syndRomics
 Title: Component loading interpretation and visualization with
     syndromic plots
-Version: 0.0.6
+Version: 0.1.0
 Author: Abel Torres-Espin, Austin Chou, J. Russell Huie, Nikos
     Kyritsis, Pavan Upadhyayula, and Adam R. Ferguson
 Maintainer: Abel Torres Espin <atpspin@gmail.com>
@@ -29,7 +29,8 @@ Imports:
     ggrepel,
     pracma,
     rlang,
-    Gifi
+    Gifi,
+    pbapply
 Suggests: 
     knitr,
     rmarkdown,
