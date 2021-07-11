@@ -9,8 +9,8 @@ extract_category_quant_plot(
   pca_data,
   var,
   plot_dim = c(1, 2),
-  nudge_y,
-  nudge_x
+  nudge_y = 0,
+  nudge_x = 0
 )
 }
 \arguments{

@@ -12,7 +12,10 @@ permut_pc_test(
   statistic = "VAF",
   conf = 0.95,
   adj.method = "BH",
-  perm.method = "permV"
+  perm.method = "permV",
+  inParallel = F,
+  n_cores = 2,
+  inParallel_extra = NULL
 )
 }
 \arguments{
@@ -37,6 +40,17 @@ See \emph{?p.adjust.methods}. Default="BH"}
 concomitantly (Fig. 2A) as opposite of the "permV" permutation strategy (Linting et al., 2011) where
 variables are permuted one at the time. If statistic is set to "VAF", \emph{perm.method} "permD" will be
 used. Default="permV".}
+
+\item{inParallel}{Logical. Whether to run the function in parallel using \emph{pbapply::pblapply}. In window machines,
+parallelization is done through \emph{parallel::parLapply}. In Unix machines, parallelization is done through
+\emph{parallel::mclapply}. See \emph{?pblapply} for details. Default = F.}
+
+\item{n_cores}{Numeric. Number of cores to use. Available cores can be obtained by \emph{parallel::detectCores()}.
+It is recommended to use less cores than available. Default = 2.}
+
+\item{inParallel_extra}{Character or vector Character with the string name of additional objects passed to the clusters when
+performing parallelization. This might be needed when the function to run the original PCA has been called with external objects.
+E.g., princals(..., ndim = ncol(dataFrame)), where dataFrame is a data frame object. In that case \emph{inParallel_extra} = "dataFrame".}
 }
 \value{
 List of class "syndromics" containing the following objects
