@@ -10,6 +10,8 @@
 
 **Bug fix:**
 
+* add pbapply to the list of imported packages.
+
 # syndRomics 0.0.6
 
 **Bug fix:** 

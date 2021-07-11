@@ -22,7 +22,7 @@ Depends:
     progress,
     R (>= 3.5.0),
     stringr,
-    tidyr
+    tidyr,
 Imports: 
     boot,
     ggnewscale,

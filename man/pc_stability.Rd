@@ -15,6 +15,9 @@ pc_stability(
   s_cut_off = 0.1,
   ci_type = "bca",
   conf = 0.95,
+  inParallel = F,
+  n_cores = 2,
+  inParallel_extra = NULL,
   ...
 )
 }
@@ -49,6 +52,17 @@ that the BCA method has demonstrated good performance for bootstrapping PCAs,
 we have set 'bca' as the default. See ref for more details.}
 
 \item{conf}{Numeric. Level of confidence region for the confidence interval. E.g. 0.95 generates 95CI. Default=0.95}
+
+\item{inParallel}{Logical. Whether to run the function in parallel using \emph{pbapply::pblapply}. In window machines,
+parallelization is done through \emph{parallel::parLapply}. In Unix machines, parallelization is done through
+\emph{parallel::mclapply}. See \emph{?pblapply} for details. Default = F.}
+
+\item{n_cores}{Numeric. Number of cores to use. Available cores can be obtained by \emph{parallel::detectCores()}.
+It is recommended to use less cores than available. Default = 2.}
+
+\item{inParallel_extra}{Character or vector Character with the string name of additional objects passed to the clusters when
+performing bootstrapping. This might be needed when the function to run the original PCA has been called with external objects.
+E.g., princals(..., ndim = ncol(dataFrame)), where dataFrame is a data frame object. In that case \emph{inParallel_extra} = "dataFrame".}
 
 \item{...}{Other arguments passed to the \emph{boot} function.}
 }

@@ -721,6 +721,10 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
 #'\emph{parallel::mclapply}. See \emph{?pblapply} for details. Default = F.
 #'@param n_cores Numeric. Number of cores to use. Available cores can be obtained by \emph{parallel::detectCores()}.
 #'It is recommended to use less cores than available. Default = 2.
+#'@param inParallel_extra Character or vector Character with the string name of additional objects passed to the clusters when
+#'performing bootstrapping. This might be needed when the function to run the original PCA has been called with external objects.
+#'E.g., princals(..., ndim = ncol(dataFrame)), where dataFrame is a data frame object. In that case \emph{inParallel_extra} = "dataFrame".
+#'
 #'@param ... Other arguments passed to the \emph{boot} function.
 #'
 #'@return Returns a list object of class "syndromics".
@@ -757,16 +761,17 @@ VAF_plot<-function(pca, pca_data, ndim=1:5, resample_ci=NULL, style="line", colo
 #'
 #'@export
 #'
-#'@import ggplot2 dplyr boot stringr progress pblapply
+#'@import ggplot2 dplyr boot stringr progress pbapply parallel
 #'@importFrom rlang .data
 #'@importFrom stats na.omit
 #'
 pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communalities= TRUE,
-                        similarity_metric='all', s_cut_off=0.1,
-                        ci_type='bca', conf=0.95,inParallel=F, n_cores=2,...){
+                       similarity_metric='all', s_cut_off=0.1,
+                       ci_type='bca', conf=0.95,inParallel=F, n_cores=2,
+                       inParallel_extra = NULL,...){
 
   # pca<-pca
-  # pca_data<-data
+  # pca_data<-df
   # ndim=3
   # B=100
   # sim='ordinary'
@@ -775,6 +780,8 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   # test_similarity= TRUE
   # similarity_metric='all'
   # s_cut_off=0.1
+  # inParallel_extra = NULL
+  # n_cores<-15
 
   results_list<-list()
   results_list[["method"]]<-'bootstrap'
@@ -794,8 +801,6 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   original_loadings<-stand_loadings(pca, pca_data)
   ndim<-min(dim(original_loadings)[2], ndim)
 
-  message("Bootstrapping ", B, " times")
-
   center=F
   .scale=F
   if(class(pca)[1]=='prcomp'){
@@ -803,7 +808,7 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     if (is.numeric(pca$scale)) .scale= TRUE
   }
 
-  if (inParallel){
+  if (inParallel & n_cores > 1){
 
     if (.Platform$OS.type == "windows"){
       message("Parallelizing through socket-based cluster")
@@ -812,78 +817,85 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 
       clusterExport(cl, c("pca","pca_data", "sim","B", "ndim",
                           "original_loadings", "n_cores","conf","ci_type",
-                          "center",".scale", "similarity_metric", "s_cut_off"),
+                          "center",".scale", "similarity_metric", "s_cut_off",
+                          inParallel_extra),
                     envir = environment())
       clusterEvalQ(cl, library(syndRomics))
-      clusterEvalQ(cl, library(boot))
       clusterEvalQ(cl, library(Gifi))
-      clusterEvalQ(cl, library(stats))
+      # clusterEvalQ(cl, library(boot))
+
+      parallel_type<-"snow"
+      parallel::clusterSetRNGStream(cl, iseed = 0L)
 
     } else{
       message("Parallelizing through multicore forking")
       cl<-n_cores #to use multicore type forking
+      parallel_type<-"multicore"
     }
 
-    b_pca <-
-      pblapply(cl = cl, X = 1:n_cores, FUN = function(no){
-        boot::boot(data = pca_data, pca=pca, statistic = boot_pca_sample, R=ceiling(B/n_cores),
-                   ndim=ndim,original_loadings=original_loadings,
-                   center=center, .scale=.scale,sim = sim,pb=NULL,...)
-      })
-
-    t<-lapply(b_pca, function(x){
-      x$t
-    })
-
-    b_pca<-list("t"=do.call(rbind, t), "t0"=b_pca[[1]]$t0,
-                "R"=nrow(t), "sim"=sim,
-                "data"=b_pca[[1]]$data,
-                "seed"=b_pca[[1]]$seed,
-                "call"=b_pca[[1]]$call,
-                "stype"= b_pca[[1]]$stype,
-                "strata" = b_pca[[1]]$strata,
-                "weights"= b_pca[[1]]$weights)
-    attr(b_pca, "boot_type") <- "boot"
-    class(b_pca)<-"boot"
+    Split <- splitpb(B, length(cl), nout = 100)
 
   }else{
-    pb <- progress_bar$new(
-      format = "[:bar] :percent ~remaining :eta",
-      total = B+1, clear = FALSE, width= 80)
-
-    b_pca<-boot::boot(data = pca_data, pca=pca, statistic = boot_pca_sample, R=B,
-                      ndim=ndim,original_loadings=original_loadings,
-                      sim = sim, pb=pb, center=center, .scale=.scale,...)
+    cl<-NULL
+    parallel_type<-"no"
+    Split <- splitpb(B, 1, nout = 100)
   }
+
+  message("Bootstrapping ", B, " times")
+
+  Bsplit <- length(Split)
+  pb <- startpb(0, Bsplit)
+  boot.list <- vector("list", Bsplit)
+  for (i in seq_len(Bsplit)) {
+    boot.list[[i]] <- boot::boot(data = pca_data, pca=pca,
+                                 statistic = boot_pca_sample,
+                                 R=length(Split[[i]]),
+                                 ndim=ndim,original_loadings=original_loadings,
+                                 sim = sim, pb=NULL, center=center, .scale=.scale,
+                                 parallel = parallel_type,cl = cl, ncpus = n_cores)
+
+    if(sum(is.na(boot.list[[i]]$t))==length(boot.list[[i]]$t) & inParallel){
+      stop("\n","Bootstrapping has failed during parallelization. Check that all required objects
+         to run the PCA are passed to the function. Use inParallel_extra argument to pass
+         extra objects. See ?pca_stability for details")
+    }
+
+    setpb(pb, i)
+  }
+
+  t<-lapply(boot.list, function(x){
+    x$t
+  })
+
+  b_pca<-list("t"=do.call(rbind, t), "t0"=boot.list[[1]]$t0,
+              "R"=nrow(t), "sim"=sim,
+              "data"=boot.list[[1]]$data,
+              "seed"=boot.list[[1]]$seed,
+              "call"=boot.list[[1]]$call,
+              "stype"= boot.list[[1]]$stype,
+              "strata" = boot.list[[1]]$strata,
+              "weights"= boot.list[[1]]$weights)
+  attr(b_pca, "boot_type") <- "boot"
+  class(b_pca)<-"boot"
 
   b_pca$t<-na.omit(b_pca$t)
   b_pca$R<-dim(b_pca$t)[1]
 
-  message("Calculating confident intervals by ", ci_type," method")
+  message("\n","Calculating confident intervals by ", ci_type," method")
 
   ci_fun<-function(ci_type){
+
     ci_results<-list()
-    if (inParallel){
+
+    if (inParallel & n_cores > 1){
       clusterExport(cl, "b_pca",envir = environment())
-
-      ci_results<-pblapply(cl=cl,X=1:dim(b_pca$t)[2], FUN=function(i){
-        ci<-boot::boot.ci(b_pca, index = i, type = ci_type,conf = conf,...)
-        ci[[names(ci)[str_detect(names(ci),ci_type)]]][,4:5]
-      })
-
-      if (class(cl)[1]=="SOCKcluster") stopCluster(cl)
-
-    }else{
-      pb <- progress_bar$new(
-        format = "[:bar] :percent ~remaining :eta",
-        total = dim(b_pca$t)[2], clear = FALSE, width= 80)
-
-      ci_results<-lapply(1:dim(b_pca$t)[2],function(i){
-        pb$tick()
-        ci<-boot::boot.ci(b_pca, index = i, type = ci_type,conf = conf,...)
-        ci[[names(ci)[str_detect(names(ci),ci_type)]]][,4:5]
-      })
     }
+
+    ci_results<-pblapply(cl=cl,X=1:dim(b_pca$t)[2], FUN=function(i){
+      ci<-boot::boot.ci(b_pca, index = i, type = ci_type,conf = conf)
+      ci[[names(ci)[str_detect(names(ci),ci_type)]]][,4:5]
+    })
+
     return(ci_results)
   }
 
@@ -895,7 +907,6 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     message("\n","Calculating confident intervals by percentage method")
 
     ci_results<-ci_fun("perc")
-
     results_list[["ci_method"]]<-"perc"
   }
 
@@ -943,30 +954,11 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
   if (!"none"%in%similarity_metric){
     message("Calculating PC similarities")
 
-    # original_loadings<-stand_loadings(pca, pca_data)[,1:ndim]
-
-    # if(inParallel){
-    #   # clusterExport(cl, "b_list",envir = environment())
-    #   clusterExport(cl, "component_similarity")
-    #
-    #   similarity_res<-pblapply(cl=cl,X=b_list,function(i){
-    #     component_similarity(list(original_loadings,i), ndim=ndim,
-    #                          s_cut_off = s_cut_off,
-    #                          similarity_metric = similarity_metric)$index_mean
-    #   })
-    #   stopCluster(cl)
-    # }else{
-    pb <- progress_bar$new(
-      format = "[:bar] :percent ~remaining :eta",
-      total = length(b_list), clear = FALSE, width= 80)
-
-    similarity_res<-lapply(b_list,function(i){
-      pb$tick()
+    similarity_res<-pblapply(cl = NULL, X = b_list, function(i){
       load.list<-list(original_loadings,i)
       component_similarity(load.list, ndim=ndim, s_cut_off = s_cut_off,
                            similarity_metric = similarity_metric)$index_mean
     })
-    # }
 
     similarity_res<-do.call(rbind, similarity_res)
 
@@ -1017,6 +1009,7 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
     message(B-dim(b_pca$t)[1],' iterations could not be computed. Low number of rows might cause some bootstrap samples not suitable for PCA')
   }
 
+  if (class(cl)[1]=="SOCKcluster") stopCluster(cl)
   return(new_syndromics(results_list))
 }
 
@@ -1048,6 +1041,9 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'\emph{parallel::mclapply}. See \emph{?pblapply} for details. Default = F.
 #'@param n_cores Numeric. Number of cores to use. Available cores can be obtained by \emph{parallel::detectCores()}.
 #'It is recommended to use less cores than available. Default = 2.
+#'@param inParallel_extra Character or vector Character with the string name of additional objects passed to the clusters when
+#'performing parallelization. This might be needed when the function to run the original PCA has been called with external objects.
+#'E.g., princals(..., ndim = ncol(dataFrame)), where dataFrame is a data frame object. In that case \emph{inParallel_extra} = "dataFrame".
 #'
 #'@details Nonparametric permutation for hypothesis testing of the VAF of component, the loadings or communalities
 #'have been studied (see refs). The hypothesis test is defined as:
@@ -1099,24 +1095,24 @@ pc_stability<-function(pca, pca_data, ndim=3, B=1000, sim='ordinary',communaliti
 #'
 #'@export
 #'
-#'@import dplyr progress pblapply
+#'@import dplyr progress pbapply parallel
 #'@importFrom stats quantile
 #'@importFrom stats p.adjust
 #'
 permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.95,
                          adj.method='BH', perm.method='permV', inParallel = F,
-                         n_cores=2){
+                         n_cores=2, inParallel_extra = NULL){
 
   # P=100
   # ndim=5
-  # statistic='commun'
+  # statistic='VAF'
   # conf=0.95
   # adj.method='BH'
   # perm.method='permV'
   # pca<-pca
   # pca_data<-mtcars
   # n_cores<-10
-
+  #
   statistic<-match.arg(statistic, c('VAF','s.loadings', 'commun'))
   perm.method<-match.arg(perm.method, c('permV','permD'))
 
@@ -1146,9 +1142,6 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
     message("Permuting ", P, " times for ", statistic,
             " using permD method")
-    # pb <- progress_bar$new(
-    #   format = "[:bar] :percent ~remaining :eta",
-    #   total = P, clear = FALSE, width= 80)
 
     perm.method<-'permD'
     results_list[['perm.method']]<-'permD'
@@ -1157,9 +1150,6 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
     message("Permuting ", P," x ",ncol(pca_data), " times for ", statistic,
             " using permV method")
-    # pb <- progress_bar$new(
-    #   format = "[:bar] :percent ~remaining :eta",
-    #   total = (P)*ncol(pca_data), clear = FALSE, width= 80)
 
     perm.method<-'permV'
     results_list[['perm.method']]<-'permV'
@@ -1175,76 +1165,52 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
       clusterExport(cl, c("pca","pca_data","P", "ndim",
                           "original_loadings", "n_cores","conf","statistic",
-                          "center",".scale", "perm.method"),
+                          "center",".scale", "perm.method",
+                          inParallel_extra),
                     envir = environment())
       clusterEvalQ(cl, library(syndRomics))
-      clusterEvalQ(cl, library(boot))
+      # clusterEvalQ(cl, library(boot))
       clusterEvalQ(cl, library(Gifi))
-      clusterEvalQ(cl, library(stats))
+      # clusterEvalQ(cl, library(stats))
+
+      parallel::clusterSetRNGStream(cl, iseed = 0L)
 
     } else{
       message("Parallelizing through multicore forking")
       cl<-n_cores #to use multicore type forking
     }
 
-
-    if (perm.method=='permD'){
-
-      per_list<-
-        pblapply(cl = cl, X = 1:n_cores, FUN = function(no){
-          replicate(ceiling(P/n_cores),syndRomics:::permut_pca_D(pca, x=pca_data, output = statistic,
-                                                                 center=center, .scale=.scale, pb=NULL),
-                    simplify = F)
-        })
-
-    }else if (perm.method=='permV'){
-
-      per_list<-
-        pblapply(cl = cl, X = 1:n_cores, FUN = function(no){
-          replicate(ceiling(P/n_cores),syndRomics:::permut_pca_V(pca, x=pca_data, output = statistic,
-                                                                 center=center, .scale=.scale, ndim = ndim,
-                                                                 original_loadings = original_loadings,pb=NULL),
-                    simplify = F)
-        })
-    }
-
-    if (class(cl)[1]=="SOCKcluster") stopCluster(cl)
-
-
-  }else{#No parallel
-
-    if (perm.method=='permD'){
-
-      pb <- progress_bar$new(
-        format = "[:bar] :percent ~remaining :eta",
-        total = P, clear = FALSE, width= 80)
-
-      per_list<-replicate(P,permut_pca_D(pca, x=pca_data, output = statistic,
-                                         center=center, .scale=.scale, pb=pb),
-                          simplify = F)
-    }else if (perm.method=='permV'){
-
-      pb <- progress_bar$new(
-        format = "[:bar] :percent ~remaining :eta",
-        total = (P)*ncol(pca_data), clear = FALSE, width= 80)
-
-      per_list<-replicate(P,permut_pca_V(pca, x=pca_data, output = statistic,
-                                         center=center, .scale=.scale, ndim = ndim,
-                                         original_loadings = original_loadings,pb=pb),
-                          simplify = F)
-    }
+  }else{
+    cl<-NULL
   }
+
+
+  if (perm.method=='permD'){
+
+    per_list<-
+      pbreplicate(cl = cl, n = P, expr = {
+        syndRomics:::permut_pca_D(pca, x=pca_data, output = statistic,
+                                  center=center, .scale=.scale, pb=NULL, ndim = ndim,
+                                  original_loadings = original_loadings)
+      }, simplify = F)
+
+  }else if (perm.method=='permV'){
+
+    per_list<-
+      pbreplicate(cl = cl, n = P, expr = {
+        syndRomics:::permut_pca_V(pca, x=pca_data, output = statistic,
+                                  center=center, .scale=.scale, pb=NULL, ndim = ndim,
+                                  original_loadings = original_loadings)
+      }, simplify = F)
+  }
+
+  if (class(cl)[1]=="SOCKcluster") stopCluster(cl)
+
 
   if (statistic=='VAF'){
     message("\nCalculating VAF...")
 
-    if(inParallel){
-      per_list<-lapply(per_list, function(x){
-        unlist(x)
-      })
-    }
-
-    df_per<-do.call(rbind, per_list)
+    df_per<-as.data.frame(do.call(rbind, per_list))
 
     if (class(pca)[1]=='prcomp'){
       original_VAF<-pca$sdev^2/sum(pca$sdev^2)
@@ -1267,9 +1233,6 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
                                  ci_low[1:ndim],ci_high[1:ndim],pvalue))
     colnames(results)<-c('original', 'mean', 'ci_low', 'ci_high','pvalue')
 
-    # if (adj.method=='none'){
-    #   results$adj_p_value<-adj.p.value
-    # }
     if(adj.method!='none'){
       results<-results%>%
         mutate(adj.p.value=p.adjust(.data$pvalue, method=adj.method))
@@ -1279,11 +1242,6 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
   if (statistic=='s.loadings'){
     message('\nCalculating loadings...')
-
-    if(inParallel){
-      per_list<-unlist(per_list, recursive = F)
-      P <- length(per_list)
-    }
 
     original_loadings<-extract_loadings(pca, pca_data)
     nvars<-ncol(pca_data)
@@ -1313,11 +1271,6 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
   if (statistic=='commun'){
     message('\nCalculating communalities...')
-
-    if(inParallel){
-      per_list<-unlist(per_list, recursive = F)
-      P <- length(per_list)
-    }
 
     original_loadings<-extract_loadings(pca, pca_data)
     original_communalities<-data.frame("original_communality"=rowSums(original_loadings[,1:ndim]^2),
@@ -1358,3 +1311,4 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
   message('\n','DONE')
   return(new_syndromics(results_list))
 }
+

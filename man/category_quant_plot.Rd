@@ -4,7 +4,14 @@
 \alias{category_quant_plot}
 \title{Category quantification plot}
 \usage{
-category_quant_plot(pca, pca_data, var, plot_dim = c(1, 2), nudge_y, nudge_x)
+category_quant_plot(
+  pca,
+  pca_data,
+  var,
+  plot_dim = c(1, 2),
+  nudge_y = 0,
+  nudge_x = 0
+)
 }
 \arguments{
 \item{pca}{Object of class \emph{prcomp}, \emph{princals}, or \emph{data.frame}. If object is a \emph{prcomp} or \emph{princals} object, \emph{pca_data} is required, and
