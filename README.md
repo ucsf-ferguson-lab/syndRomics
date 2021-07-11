@@ -18,7 +18,7 @@ Here you will find the basics of the package. There is more, so we encourage you
 
 # Installation
 
-syndRomics package can be installed from GitHub using the following code:
+syndRomics package latest release can be installed from GitHub using the following code:
 
 ```r
 ##install.packages('devtools') You will need to install {devtools} if you don't have it in your system
@@ -29,7 +29,7 @@ devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@*release")
 remotes::install_github(repo = "ucsf-ferguson-lab/syndRomics@*release")
 ```
 
-This will install the latest release. To install previous versions, you can use:
+To install previous versions, you can use:
 
     devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@tagName")
     
@@ -42,6 +42,13 @@ For example:
 ```r
 devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@0.0.1.9000")
 ## remotes::install_github(repo = "ucsf-ferguson-lab/syndRomics@0.0.1.9000")
+```
+
+To install the latest development push use:
+
+```r
+devtools::install_github(repo = "ucsf-ferguson-lab/syndRomics@dev")
+## remotes::install_github(repo = "ucsf-ferguson-lab/syndRomics@dev")
 ```
 
 # Use Example
