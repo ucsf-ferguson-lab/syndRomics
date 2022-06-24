@@ -19,6 +19,6 @@ testthat::test_that("warning", {
 testthat::test_that("errors", {
   testthat::expect_error(
     extract_syndromic_plot(pca, mtcars, cutoff = 0.1,pc = "PC11"),
-    "There is no loading above cutoff for PC11"
+    "PC11  has no loadings above cutoff"
   )
 })

@@ -1105,13 +1105,14 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
   # P=100
   # ndim=5
-  # statistic='VAF'
+  # statistic='s.loadings'
   # conf=0.95
   # adj.method='BH'
   # perm.method='permV'
   # pca<-pca
-  # pca_data<-mtcars
+  # pca_data<-data[,-1]
   # n_cores<-10
+  # inParallel = F
   #
   statistic<-match.arg(statistic, c('VAF','s.loadings', 'commun'))
   perm.method<-match.arg(perm.method, c('permV','permD'))
@@ -1189,7 +1190,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
     per_list<-
       pbreplicate(cl = cl, n = P, expr = {
-        syndRomics:::permut_pca_D(pca, x=pca_data, output = statistic,
+        permut_pca_D(pca, x=pca_data, output = statistic,
                                   center=center, .scale=.scale, pb=NULL, ndim = ndim,
                                   original_loadings = original_loadings)
       }, simplify = F)
@@ -1198,7 +1199,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
 
     per_list<-
       pbreplicate(cl = cl, n = P, expr = {
-        syndRomics:::permut_pca_V(pca, x=pca_data, output = statistic,
+        permut_pca_V(pca, x=pca_data, output = statistic,
                                   center=center, .scale=.scale, pb=NULL, ndim = ndim,
                                   original_loadings = original_loadings)
       }, simplify = F)
@@ -1246,7 +1247,8 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
     original_loadings<-extract_loadings(pca, pca_data)
     nvars<-ncol(pca_data)
 
-    per_df<-as.data.frame(do.call(rbind, per_list))[,1:ndim]
+    per_df<-as.data.frame(do.call(rbind, per_list)[,1:ndim])
+
     colnames(per_df)<-paste0("PC", 1:ncol(per_df))
     per_df$Variables<-rep(original_loadings$Variables, P)
     per_df$id<-rep(1:P, each=nrow(original_loadings))
@@ -1276,7 +1278,7 @@ permut_pc_test<-function(pca, pca_data, P=1000, ndim=3, statistic='VAF', conf=0.
     original_communalities<-data.frame("original_communality"=rowSums(original_loadings[,1:ndim]^2),
                                        "Variables"=rownames(original_loadings[,1:ndim]))
     nvars<-dim(pca_data)[2]
-    per_df<-as.data.frame(do.call(rbind, per_list))[,1:ndim]
+    per_df<-as.data.frame(do.call(rbind, per_list)[,1:ndim])
 
     colnames(per_df)<-paste0("PC", 1:ncol(per_df))
 
