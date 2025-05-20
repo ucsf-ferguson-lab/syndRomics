@@ -326,8 +326,8 @@ extract_syndromic_plot<-function(load_df, pc,cutoff=0.5, VAF,arrow_size_multi=10
 extract_category_quant_plot<-function(pca, pca_data, var, plot_dim=c(1,2),
                               nudge_y=0, nudge_x=0){
 
-  pca_data<-mtcars
-  var<-"cyl"
+  # pca_data<-mtcars
+  # var<-"cyl"
 
   if(length(var)>1){
     stop("To obtain the plot for more than one variable, use category_quant_plot()")
